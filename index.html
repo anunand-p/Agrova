@@ -57,10 +57,11 @@
       position: relative;
       z-index: 100;
       background: var(--green-deep);
-      padding: 0 2rem;
+      padding: 0 2.5rem;
+      display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 70px;
+      min-height: 76px;
       box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
       overflow: visible;
     }
@@ -69,23 +70,38 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      text-decoration: none;
+      flex-shrink: 0;
     }
 
     .logo-icon {
-      width: 38px;
-      height: 38px;
-      background: var(--green-fresh);
-      border-radius: 10px;
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--green-fresh), var(--green-light));
+      border-radius: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 21px;
+      box-shadow: 0 6px 18px rgba(74, 145, 87, 0.3);
     }
 
     .logo-text {
       font-family: 'Playfair Display', serif;
-      font-size: 1.5rem;
+      font-size: 1.65rem;
+      line-height: 1;
       color: var(--cream);
+    }
+
+    .logo-subtitle {
+      display: block;
+      margin-top: 4px;
+      color: rgba(245, 240, 232, 0.58);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
     .logo-text span {
@@ -114,6 +130,27 @@
     nav a {
       margin-left: 0;
       white-space: nowrap;
+      position: relative;
+      padding: 8px 0;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 1px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--green-light);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.2s ease;
+    }
+
+    nav a:hover::after,
+    nav a:focus-visible::after {
+      transform: scaleX(1);
     }
 
     button:focus-visible,
@@ -1133,13 +1170,37 @@
       position: relative;
       z-index: 1;
       text-align: center;
-      padding: 1.8rem;
+      padding: 2.4rem 1.5rem;
       font-size: 0.8rem;
       color: var(--text-muted);
       border-top: 1px solid #dde7de;
     }
 
-    footer strong {
+    .footer-brand {
+      display: block;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      color: var(--green-fresh);
+      margin-bottom: 9px;
+    }
+
+    .footer-product {
+      display: block;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .footer-disclaimer {
+      display: block;
+      max-width: 620px;
+      margin: 0 auto;
+      line-height: 1.5;
+      opacity: 0.82;
+    }
+
+    footer strong:not(.footer-brand) {
       color: var(--green-fresh);
     }
 
@@ -1179,6 +1240,179 @@
       gap: 10px;
       margin-top: 20px;
       flex-wrap: wrap;
+    }
+
+    .scan-crop-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+    }
+
+    .scan-crop-field select {
+      border: 1px solid #cce0d0;
+      border-radius: 10px;
+      padding: 8px 12px;
+      background: #fff;
+      color: var(--text-dark);
+      font: inherit;
+    }
+
+    body.dark .scan-crop-field select {
+      background: #1c241d;
+      border-color: #3d4d40;
+      color: #fff;
+    }
+
+    .history-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .history-export-btn {
+      border: 1px solid #cbdccc;
+      background: transparent;
+      color: var(--green-deep);
+      border-radius: 50px;
+      padding: 5px 11px;
+      font: 600 0.78rem 'DM Sans', sans-serif;
+      cursor: pointer;
+    }
+
+    .history-export-btn:hover {
+      background: #e8f5e9;
+    }
+
+    .gallery-image-wrap {
+      height: 130px;
+      margin: -1.4rem -1.4rem 1rem;
+      overflow: hidden;
+      background: linear-gradient(135deg, #dfeee0, #f6faf6);
+    }
+
+    .gallery-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.35s ease;
+    }
+
+    .gallery-card:hover .gallery-image-wrap img {
+      transform: scale(1.05);
+    }
+
+    .feature-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(10, 24, 13, 0.62);
+      backdrop-filter: blur(8px);
+    }
+
+    .feature-overlay.active {
+      display: flex;
+    }
+
+    .feature-dialog {
+      width: min(520px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark .feature-dialog {
+      background: #243027;
+      color: #fff;
+    }
+
+    .feature-dialog h2 {
+      margin-bottom: 8px;
+      color: var(--green-deep);
+      font: 700 1.55rem 'Playfair Display', serif;
+    }
+
+    body.dark .feature-dialog h2 {
+      color: var(--green-light);
+    }
+
+    .feature-dialog p {
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .walkthrough-step {
+      display: none;
+      margin: 1.4rem 0;
+    }
+
+    .walkthrough-step.active {
+      display: block;
+      animation: fadeUp 0.25s ease both;
+    }
+
+    .walkthrough-icon {
+      display: grid;
+      place-items: center;
+      width: 70px;
+      height: 70px;
+      margin-bottom: 1rem;
+      border-radius: 20px;
+      background: #e8f5e9;
+      font-size: 2rem;
+    }
+
+    .walkthrough-controls,
+    .consent-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 1.4rem;
+    }
+
+    .walkthrough-dots {
+      display: flex;
+      gap: 6px;
+      margin-top: 1rem;
+    }
+
+    .walkthrough-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #cbdccc;
+    }
+
+    .walkthrough-dot.active {
+      width: 20px;
+      border-radius: 8px;
+      background: var(--green-fresh);
+    }
+
+    @media (max-width: 600px) {
+      .scan-crop-field {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .scan-crop-field select {
+        width: 100%;
+      }
+
+      .history-actions {
+        align-items: flex-end;
+        flex-direction: column;
+      }
     }
 
     .btn-action {
@@ -2310,7 +2544,7 @@
   <header>
     <div class="logo">
       <div class="logo-icon">🌿</div>
-      <div class="logo-text">Agro<span>va</span></div>
+      <div class="logo-text">Agro<span>va</span><small class="logo-subtitle">AI farming assistant</small></div>
     </div>
     <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" onclick="toggleMobileNav()"
       aria-controls="siteNavigation" aria-expanded="false" aria-label="Open navigation">☰</button>
@@ -2366,6 +2600,20 @@
       <div class="panel active" id="panelUpload">
 
         <span class="section-label">Step 1 — Upload Leaf Image</span>
+
+        <label class="scan-crop-field" for="scanCrop">
+          <span>Crop being scanned</span>
+          <select id="scanCrop">
+            <option value="Unknown crop">Select crop</option>
+            <option value="Tomato">Tomato</option>
+            <option value="Banana">Banana</option>
+            <option value="Chilli">Chilli / Pepper</option>
+            <option value="Ginger">Ginger</option>
+            <option value="Paddy">Paddy / Rice</option>
+            <option value="Coconut">Coconut</option>
+            <option value="Other crop">Other crop</option>
+          </select>
+        </label>
 
         <div class="upload-zone" id="uploadZone">
           <input type="file" id="imageUpload" accept="image/*" />
@@ -2502,6 +2750,9 @@
 
         <!-- Action Buttons -->
         <div class="result-actions">
+          <button class="btn-action btn-history" onclick="tryAnotherImage()" id="tryAnotherBtn">
+            <span>↻</span> Try Another Image
+          </button>
           <button class="btn-action btn-listen" onclick="speakDiagnosis()" id="listenBtn">
             <span>🔊</span> Listen (Voice Readout)
           </button>
@@ -2537,12 +2788,15 @@
   <section class="history-section" id="historySection" style="display:none">
     <div class="main-card" style="margin-bottom:0">
       <div class="card" style="padding:1.5rem">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:12px">
           <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--green-deep)">📊 Recent Scans
           </div>
-          <button onclick="clearHistory()"
-            style="background:none;border:1px solid #ddd;border-radius:50px;padding:5px 14px;font-size:0.8rem;cursor:pointer;color:var(--text-muted)">Clear
-            All</button>
+          <div class="history-actions">
+            <button class="history-export-btn" onclick="exportHistoryCSV()">⬇ CSV</button>
+            <button class="history-export-btn" onclick="exportHistoryPDF()">🖨 PDF</button>
+            <button onclick="clearHistory()"
+              style="background:none;border:1px solid #ddd;border-radius:50px;padding:5px 14px;font-size:0.8rem;cursor:pointer;color:var(--text-muted)">Clear All</button>
+          </div>
         </div>
         <div id="historyList"></div>
       </div>
@@ -2757,8 +3011,9 @@
   </section>
 
   <footer>
-    <strong>Agrova</strong> · AI Farming Assistant · Powered by <strong>Teachable Machine</strong> + TensorFlow.js<br>
-    <small>Results are AI-based estimates. Always consult a local agronomist for critical decisions.</small>
+    <strong class="footer-brand">Agrova</strong>
+    <span class="footer-product">AI Farming Assistant · Powered by <strong>Teachable Machine</strong> + TensorFlow.js</span>
+    <small class="footer-disclaimer">Results are AI-based estimates. Always consult a local agronomist for critical decisions.</small>
   </footer>
 
   <div class="model-status" id="modelStatus">
@@ -2954,18 +3209,32 @@
     const previewImg = document.getElementById('previewImg');
     const previewContainer = document.getElementById('previewContainer');
     const uploadZone = document.getElementById('uploadZone');
+    const MAX_IMAGE_SIZE = 12 * 1024 * 1024;
     let uploadedDataURL = null;
+
+    function showUploadError(message) {
+      document.getElementById('errorMsgUpload').textContent = message;
+      document.getElementById('errorBoxUpload').classList.add('visible');
+    }
 
     uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
     uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
     uploadZone.addEventListener('drop', e => {
       e.preventDefault(); uploadZone.classList.remove('drag-over');
       const f = e.dataTransfer.files[0];
-      if (f && f.type.startsWith('image/')) handleUploadFile(f);
+      if (f) handleUploadFile(f);
     });
     imageUpload.addEventListener('change', e => { if (e.target.files[0]) handleUploadFile(e.target.files[0]); });
 
     function handleUploadFile(file) {
+      if (!file.type.startsWith('image/')) {
+        showUploadError('Please choose an image file such as JPG, PNG, or WEBP.');
+        return;
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        showUploadError('This image is larger than 12 MB. Please choose a smaller file.');
+        return;
+      }
       const reader = new FileReader();
       const analyzeButton = document.getElementById('analyzeUploadBtn');
       analyzeButton.disabled = true;
@@ -3020,7 +3289,11 @@
     const capturedThumb = document.getElementById('capturedThumb');
     const capturedThumbImg = document.getElementById('capturedThumbImg');
 
-    async function startCamera() {
+    async function startCamera(consentGranted = false) {
+      if (!consentGranted) {
+        requestPermissionConsent('camera', () => startCamera(true));
+        return;
+      }
       document.getElementById('errorBoxCam').classList.remove('visible');
       capturedThumb.classList.remove('visible');
       capturedCanvas.style.display = 'none';
@@ -3198,6 +3471,14 @@
       rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    function tryAnotherImage() {
+      document.getElementById('resultsSection').classList.remove('visible');
+      document.getElementById('errorBoxUpload').classList.remove('visible');
+      document.getElementById('errorBoxCam').classList.remove('visible');
+      document.getElementById('scanCrop').focus();
+      document.getElementById('detect').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     // ── HELPERS ──────────────────────────────────────────────────
     function show(id, visible) {
       document.getElementById(id).style.display = visible ? 'inline-flex' : 'none';
@@ -3271,14 +3552,23 @@
         document.getElementById('diseaseCard').className.includes('medium') ? 'medium' : 'healthy';
 
       const scan = {
+        crop: document.getElementById('scanCrop').value,
         disease, conf, severity,
+        remedy: document.querySelector('.remedy-title')?.textContent || 'See diagnosis details',
         img: imgSrc,
         date: new Date().toLocaleDateString('en-IN')
       };
 
       scanHistory.unshift(scan);
       if (scanHistory.length > 5) scanHistory = scanHistory.slice(0, 5);
-      localStorage.setItem('agrova-history', JSON.stringify(scanHistory));
+      try {
+        localStorage.setItem('agrova-history', JSON.stringify(scanHistory));
+      } catch (error) {
+        scanHistory = scanHistory.slice(0, 1);
+        document.getElementById('saveBtn').textContent = '⚠️ Storage full';
+        setTimeout(() => { document.getElementById('saveBtn').innerHTML = '<span>💾</span> Save Scan'; }, 2200);
+        return;
+      }
       renderHistory();
 
       document.getElementById('saveBtn').textContent = '✅ Saved!';
@@ -3293,6 +3583,8 @@
       list.innerHTML = scanHistory.map(s => {
         const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
         const safeDisease = escapeHtml(s.disease || 'Unknown result');
+        const safeCrop = escapeHtml(s.crop || 'Unknown crop');
+        const safeRemedy = escapeHtml(s.remedy || 'See diagnosis details');
         const safeDate = escapeHtml(s.date || 'Unknown date');
         const safeConf = escapeHtml(s.conf || '');
         const badgeColor = s.severity === 'high' ? '#fee2e2;color:#991b1b' :
@@ -3304,7 +3596,8 @@
         </div>
         <div class="history-info">
           <div class="history-disease">${safeDisease}</div>
-          <div class="history-meta">${safeDate} · ${safeConf}</div>
+          <div class="history-meta">${safeCrop} · ${safeDate} · ${safeConf}</div>
+          <div class="history-meta">Remedy: ${safeRemedy}</div>
         </div>
         <span class="history-badge" style="background:${badgeColor}">${s.severity}</span>
       </div>`;
@@ -3315,6 +3608,31 @@
       scanHistory = [];
       localStorage.removeItem('agrova-history');
       renderHistory();
+    }
+
+    function exportHistoryCSV() {
+      if (!scanHistory.length) return;
+      const headers = ['Date', 'Crop', 'Disease', 'Confidence', 'Severity', 'Remedy'];
+      const escapeCell = value => `"${String(value || '').replace(/"/g, '""')}"`;
+      const rows = scanHistory.map(scan => [scan.date, scan.crop, scan.disease, scan.conf, scan.severity, scan.remedy].map(escapeCell).join(','));
+      const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `agrova-treatment-history-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function exportHistoryPDF() {
+      if (!scanHistory.length) return;
+      const escapePdf = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+      const rows = scanHistory.map(scan => `<tr><td>${escapePdf(scan.date)}</td><td>${escapePdf(scan.crop || 'Unknown crop')}</td><td>${escapePdf(scan.disease)}</td><td>${escapePdf(scan.conf)}</td><td>${escapePdf(scan.remedy)}</td></tr>`).join('');
+      const printWindow = window.open('', '_blank', 'width=900,height=700');
+      if (!printWindow) return;
+      printWindow.document.write(`<html><head><title>Agrova Treatment History</title><style>body{font:14px Arial;color:#1a3a1f;padding:32px}h1{font-size:24px}table{border-collapse:collapse;width:100%;margin-top:24px}th,td{border:1px solid #cbdccc;padding:10px;text-align:left}th{background:#e8f5e9}</style></head><body><h1>Agrova Treatment History</h1><p>Generated ${new Date().toLocaleString('en-IN')}</p><table><thead><tr><th>Date</th><th>Crop</th><th>Disease</th><th>Confidence</th><th>Remedy</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
     }
 
     // Load history on page load
@@ -3336,8 +3654,17 @@
 
     function renderGallery() {
       const grid = document.getElementById('galleryGrid');
-      grid.innerHTML = GALLERY_DATA.map(d => `
+      const galleryPhotos = [
+        'https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1515150144380-bca9f1650ed9?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?auto=format&fit=crop&w=800&q=80'
+      ];
+      grid.innerHTML = GALLERY_DATA.map((d, index) => `
     <div class="gallery-card">
+      <div class="gallery-image-wrap">
+        <img src="${galleryPhotos[index % galleryPhotos.length]}" alt="${d.name} plant reference photo" loading="lazy" onerror="this.style.display='none'" />
+      </div>
       <span class="gallery-icon">${d.icon}</span>
       <div class="gallery-name">${d.name}</div>
       <div class="gallery-crop">${d.crop}</div>
@@ -3399,6 +3726,10 @@
 
     // ── NEARBY AGRI SHOPS ─────────────────────────────────────────
     function findNearbyShops() {
+      requestPermissionConsent('location', findNearbyShopsAfterConsent);
+    }
+
+    function findNearbyShopsAfterConsent() {
       const btn = document.getElementById('findShopsBtn');
       const status = document.getElementById('shopsStatus');
       btn.disabled = true;
@@ -4939,7 +5270,11 @@ IMPORTANT: Always reply in {LANGUAGE}. Even if the user writes in another langua
     }
 
     // Voice Input — Speech to Text
-    function toggleVoiceInput() {
+    function toggleVoiceInput(consentGranted = false) {
+      if (!consentGranted) {
+        requestPermissionConsent('microphone', () => toggleVoiceInput(true));
+        return;
+      }
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         addMessage("Sorry, your browser doesn't support voice input. Please use Chrome!", 'bot');
         return;
@@ -5060,6 +5395,109 @@ IMPORTANT: Always reply in {LANGUAGE}. Even if the user writes in another langua
       </div>
     </div>
   </div>
+
+  <div class="feature-overlay" id="walkthroughOverlay" aria-hidden="true">
+    <div class="feature-dialog" role="dialog" aria-modal="true" aria-labelledby="walkthroughTitle">
+      <div class="walkthrough-step active" data-step="1">
+        <div class="walkthrough-icon">🔬</div>
+        <h2 id="walkthroughTitle">Welcome to Agrova</h2>
+        <p>Take a clear leaf photo in daylight, select the crop, and let Agrova suggest possible diseases and practical next steps.</p>
+      </div>
+      <div class="walkthrough-step" data-step="2">
+        <div class="walkthrough-icon">🧪</div>
+        <h2>Act with context</h2>
+        <p>Review confidence, treatment guidance, spray calculations, weather risk, and your saved treatment history before making a decision.</p>
+      </div>
+      <div class="walkthrough-step" data-step="3">
+        <div class="walkthrough-icon">🛡️</div>
+        <h2>Use it responsibly</h2>
+        <p>AI results are estimates. Always follow product labels and consult a qualified local agriculture professional for serious outbreaks.</p>
+      </div>
+      <div class="walkthrough-dots" aria-hidden="true">
+        <span class="walkthrough-dot active"></span><span class="walkthrough-dot"></span><span class="walkthrough-dot"></span>
+      </div>
+      <div class="walkthrough-controls">
+        <button class="btn btn-secondary" id="walkthroughSkip">Skip</button>
+        <button class="btn btn-primary" id="walkthroughNext">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-overlay" id="consentOverlay" aria-hidden="true">
+    <div class="feature-dialog" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+      <div class="walkthrough-icon" id="consentIcon">🔐</div>
+      <h2 id="consentTitle">Permission needed</h2>
+      <p id="consentMessage">Agrova needs access to continue.</p>
+      <div class="consent-actions">
+        <button class="btn btn-secondary" id="consentCancel">Cancel</button>
+        <button class="btn btn-primary" id="consentAllow">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── ONBOARDING & PERMISSION CONSENT ─────────────────────────
+    let pendingPermissionAction = null;
+
+    const CONSENT_COPY = {
+      camera: { icon: '📷', title: 'Use your camera?', message: 'Agrova uses your camera only to capture a leaf image for on-device analysis. The camera stops when you stop the scan.' },
+      microphone: { icon: '🎤', title: 'Use your microphone?', message: 'Agrova uses the microphone only to turn your farming question into text. You can cancel at any time.' },
+      location: { icon: '📍', title: 'Use your location?', message: 'Agrova uses your approximate location to find nearby agricultural services and fetch local weather risk.' }
+    };
+
+    function requestPermissionConsent(type, action) {
+      if (localStorage.getItem(`agrova-consent-${type}`) === 'granted') {
+        action();
+        return;
+      }
+      const copy = CONSENT_COPY[type];
+      pendingPermissionAction = { type, action };
+      document.getElementById('consentIcon').textContent = copy.icon;
+      document.getElementById('consentTitle').textContent = copy.title;
+      document.getElementById('consentMessage').textContent = copy.message;
+      document.getElementById('consentOverlay').classList.add('active');
+      document.getElementById('consentOverlay').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeConsent() {
+      pendingPermissionAction = null;
+      document.getElementById('consentOverlay').classList.remove('active');
+      document.getElementById('consentOverlay').setAttribute('aria-hidden', 'true');
+    }
+
+    document.getElementById('consentAllow').addEventListener('click', () => {
+      if (!pendingPermissionAction) return;
+      const pending = pendingPermissionAction;
+      localStorage.setItem(`agrova-consent-${pending.type}`, 'granted');
+      closeConsent();
+      pending.action();
+    });
+    document.getElementById('consentCancel').addEventListener('click', closeConsent);
+
+    let walkthroughStep = 1;
+    function closeWalkthrough() {
+      document.getElementById('walkthroughOverlay').classList.remove('active');
+      document.getElementById('walkthroughOverlay').setAttribute('aria-hidden', 'true');
+      localStorage.setItem('agrova-walkthrough-seen', 'true');
+    }
+
+    function showWalkthroughStep(step) {
+      walkthroughStep = step;
+      document.querySelectorAll('.walkthrough-step').forEach(item => item.classList.toggle('active', item.dataset.step === String(step)));
+      document.querySelectorAll('.walkthrough-dot').forEach((dot, index) => dot.classList.toggle('active', index === step - 1));
+      document.getElementById('walkthroughNext').textContent = step === 3 ? 'Start using Agrova' : 'Next';
+    }
+
+    document.getElementById('walkthroughNext').addEventListener('click', () => walkthroughStep === 3 ? closeWalkthrough() : showWalkthroughStep(walkthroughStep + 1));
+    document.getElementById('walkthroughSkip').addEventListener('click', closeWalkthrough);
+
+    if (!localStorage.getItem('agrova-walkthrough-seen')) {
+      setTimeout(() => {
+        document.getElementById('walkthroughOverlay').classList.add('active');
+        document.getElementById('walkthroughOverlay').setAttribute('aria-hidden', 'false');
+      }, 500);
+    }
+  </script>
 
 </body>
 
