@@ -1,0 +1,5066 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agrova – AI Plant Disease Detection</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --green-deep: #1a3a1f;
+      --green-mid: #2d5a35;
+      --green-fresh: #4a9157;
+      --green-light: #7cc47f;
+      --cream: #f5f0e8;
+      --gold: #c8a84b;
+      --text-dark: #1a1a1a;
+      --text-muted: #6b7c6e;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 80%, rgba(74, 145, 87, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(26, 58, 31, 0.06) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a9157' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* HEADER */
+    header {
+      position: relative;
+      z-index: 100;
+      background: var(--green-deep);
+      padding: 0 2rem;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+      overflow: visible;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--green-fresh);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--cream);
+    }
+
+    .logo-text span {
+      color: var(--green-light);
+    }
+
+    nav a {
+      color: rgba(245, 240, 232, 0.7);
+      text-decoration: none;
+      margin-left: 2rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--green-light);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+    }
+
+    nav a {
+      margin-left: 0;
+      white-space: nowrap;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 3px solid rgba(124, 196, 127, 0.75);
+      outline-offset: 3px;
+    }
+
+    #siteLang option {
+      background: var(--green-deep);
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 6px;
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 70px 2rem 50px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(74, 145, 87, 0.15);
+      border: 1px solid rgba(74, 145, 87, 0.4);
+      color: var(--green-fresh);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 50px;
+      margin-bottom: 22px;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--green-deep);
+      max-width: 700px;
+      margin: 0 auto 18px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--green-fresh);
+      position: relative;
+    }
+
+    .hero h1 em::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--green-light);
+      border-radius: 2px;
+      opacity: 0.5;
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* MAIN CARD */
+    .main-card {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto 60px;
+      padding: 0 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 8px 60px rgba(26, 58, 31, 0.12), 0 2px 12px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    /* MODE TABS */
+    .mode-tabs {
+      display: flex;
+      border-bottom: 2px solid #eef2ee;
+    }
+
+    .mode-tab {
+      flex: 1;
+      padding: 1.1rem;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .mode-tab:hover {
+      color: var(--green-fresh);
+      background: #fafcfa;
+    }
+
+    .mode-tab.active {
+      color: var(--green-deep);
+      border-bottom-color: var(--green-fresh);
+      background: #fff;
+    }
+
+    .tab-icon {
+      font-size: 1.1rem;
+    }
+
+    /* PANELS */
+    .panel {
+      display: none;
+      padding: 2.2rem;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    /* SETUP NOTICE */
+
+    /* SECTION LABEL */
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    /* UPLOAD ZONE */
+    .upload-zone {
+      border: 2px dashed #c8d9ca;
+      border-radius: 16px;
+      padding: 2.8rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #fafcfa;
+      position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag-over {
+      border-color: var(--green-fresh);
+      background: rgba(74, 145, 87, 0.04);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: 50%;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .upload-zone h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--green-deep);
+      margin-bottom: 5px;
+    }
+
+    .upload-zone p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .upload-zone p strong {
+      color: var(--green-fresh);
+      font-weight: 600;
+    }
+
+    .scan-guidance {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .scan-guidance-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #e0ebe1;
+      border-radius: 12px;
+      background: rgba(245, 250, 245, 0.72);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+
+    .scan-guidance-item strong {
+      display: block;
+      color: var(--green-deep);
+      font-size: 0.8rem;
+      margin-bottom: 2px;
+    }
+
+    .scan-guidance-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    body.dark .scan-guidance-item {
+      background: rgba(35, 48, 37, 0.72);
+      border-color: #3d4d40;
+    }
+
+    body.dark .scan-guidance-item strong {
+      color: var(--green-light);
+    }
+
+    /* UPLOAD PREVIEW */
+    .preview-container {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .preview-container.visible {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .preview-image-wrap {
+      flex-shrink: 0;
+      width: 150px;
+      height: 150px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 3px solid var(--green-light);
+    }
+
+    .preview-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-info {
+      flex: 1;
+    }
+
+    .preview-filename {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--green-deep);
+      margin-bottom: 5px;
+      word-break: break-all;
+    }
+
+    .preview-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* WEBCAM */
+    .webcam-container {
+      position: relative;
+      background: #0d1f10;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      max-height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #webcamVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      border-radius: 16px;
+    }
+
+    .webcam-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+    }
+
+    .webcam-placeholder .cam-icon {
+      font-size: 3rem;
+      opacity: 0.4;
+    }
+
+    /* scan overlay */
+    .scan-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: none;
+    }
+
+    .scan-overlay.active {
+      display: block;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green-light), transparent);
+      box-shadow: 0 0 10px var(--green-fresh);
+      animation: scanMove 2s ease-in-out infinite;
+    }
+
+    @keyframes scanMove {
+      0% {
+        top: 10%;
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        top: 90%;
+        opacity: 0;
+      }
+    }
+
+    .scan-corners::before,
+    .scan-corners::after {
+      content: '';
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-color: var(--green-light);
+      border-style: solid;
+      opacity: 0.7;
+    }
+
+    .scan-corners::before {
+      top: 12px;
+      left: 12px;
+      border-width: 3px 0 0 3px;
+      border-radius: 4px 0 0 0;
+    }
+
+    .scan-corners::after {
+      bottom: 12px;
+      right: 12px;
+      border-width: 0 3px 3px 0;
+      border-radius: 0 0 4px 0;
+    }
+
+    #capturedCanvas {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 16px;
+    }
+
+    .webcam-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .cam-status {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .cam-live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.2;
+      }
+    }
+
+    .captured-thumb {
+      display: none;
+      margin-top: 16px;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .captured-thumb.visible {
+      display: flex;
+    }
+
+    .captured-thumb-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 3px solid var(--green-fresh);
+      flex-shrink: 0;
+    }
+
+    .captured-thumb-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .captured-thumb-info {
+      flex: 1;
+    }
+
+    .captured-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--green-deep);
+      margin-bottom: 5px;
+    }
+
+    .captured-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      padding: 11px 24px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--green-deep);
+      color: var(--cream);
+    }
+
+    .btn-primary:hover {
+      background: var(--green-mid);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(26, 58, 31, 0.3);
+    }
+
+    .btn-primary:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid #ccc;
+    }
+
+    .btn-secondary:hover {
+      border-color: #999;
+      color: var(--text-dark);
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1.5px solid #fca5a5;
+    }
+
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+
+    .btn-green {
+      background: var(--green-fresh);
+      color: #fff;
+    }
+
+    .btn-green:hover {
+      background: var(--green-mid);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(74, 145, 87, 0.4);
+    }
+
+    /* LOADING */
+    .loading-bar {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .loading-bar.visible {
+      display: block;
+    }
+
+    .loading-text {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+    }
+
+    .progress-track {
+      height: 6px;
+      background: #e8f0e9;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green-fresh), var(--green-light));
+      border-radius: 10px;
+      width: 0%;
+      transition: width 0.4s ease;
+      animation: pulse-prog 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-prog {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    /* ERROR */
+    .error-box {
+      background: #fff5f5;
+      border: 1px solid #fca5a5;
+      border-radius: 12px;
+      padding: 0.9rem 1.2rem;
+      color: #991b1b;
+      font-size: 0.87rem;
+      display: none;
+      margin-top: 14px;
+    }
+
+    .error-box.visible {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* RESULTS */
+    .results-section {
+      padding: 2.2rem;
+      display: none;
+      border-top: 1px solid #eef2ee;
+    }
+
+    .results-section.visible {
+      display: block;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .results-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      color: var(--green-deep);
+    }
+
+    .confidence-pill {
+      background: rgba(74, 145, 87, 0.1);
+      color: var(--green-mid);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 50px;
+      border: 1px solid rgba(74, 145, 87, 0.25);
+    }
+
+    .source-tag {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      background: #f0f4f0;
+      padding: 3px 10px;
+      border-radius: 50px;
+      margin-left: 8px;
+    }
+
+    .disease-card {
+      border-radius: 16px;
+      padding: 1.4rem;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      border: 2px solid;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .disease-card.severity-high {
+      background: #fff5f5;
+      border-color: #fca5a5;
+    }
+
+    .disease-card.severity-medium {
+      background: #fffbeb;
+      border-color: #fcd34d;
+    }
+
+    .disease-card.severity-low {
+      background: #f0fdf4;
+      border-color: #86efac;
+    }
+
+    .disease-card.severity-healthy {
+      background: #f0fdf4;
+      border-color: var(--green-fresh);
+    }
+
+    .disease-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .severity-high .disease-icon {
+      background: #fee2e2;
+    }
+
+    .severity-medium .disease-icon {
+      background: #fef3c7;
+    }
+
+    .severity-low .disease-icon,
+    .severity-healthy .disease-icon {
+      background: #dcfce7;
+    }
+
+    .disease-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .severity-high .disease-name {
+      color: #991b1b;
+    }
+
+    .severity-medium .disease-name {
+      color: #92400e;
+    }
+
+    .severity-low .disease-name,
+    .severity-healthy .disease-name {
+      color: var(--green-deep);
+    }
+
+    .disease-latin {
+      font-size: 0.8rem;
+      font-style: italic;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .disease-desc {
+      font-size: 0.88rem;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .severity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .badge-high {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-low {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-healthy {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* LOW CONFIDENCE WARNING */
+    .low-confidence-box {
+      display: none;
+      background: #fffbeb;
+      border: 2px solid #f59e0b;
+      border-radius: 16px;
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 20px;
+      gap: 14px;
+      align-items: flex-start;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .low-confidence-box.visible {
+      display: flex;
+    }
+
+    .lc-icon {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .lc-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 6px;
+    }
+
+    .lc-desc {
+      font-size: 0.85rem;
+      color: #78350f;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .lc-tips {
+      font-size: 0.8rem;
+      color: #92400e;
+      background: rgba(245, 158, 11, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      line-height: 1.6;
+    }
+
+    .lc-tips span {
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+
+    .remedy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px;
+    }
+
+    @media(max-width:560px) {
+      .remedy-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .remedy-card {
+      background: var(--cream);
+      border-radius: 14px;
+      padding: 1.1rem;
+      border: 1px solid #dde7de;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .remedy-card:nth-child(2) {
+      animation-delay: 0.08s;
+    }
+
+    .remedy-card:nth-child(3) {
+      animation-delay: 0.16s;
+    }
+
+    .remedy-card:nth-child(4) {
+      animation-delay: 0.24s;
+    }
+
+    .remedy-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+
+    .remedy-icon-sm {
+      width: 30px;
+      height: 30px;
+      background: var(--green-deep);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .remedy-title {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--green-deep);
+    }
+
+    .remedy-steps {
+      list-style: none;
+    }
+
+    .remedy-steps li {
+      font-size: 0.81rem;
+      color: #555;
+      line-height: 1.5;
+      padding-left: 15px;
+      position: relative;
+      margin-bottom: 5px;
+    }
+
+    .remedy-steps li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--green-fresh);
+      font-size: 0.73rem;
+    }
+
+    /* MODEL STATUS */
+    .model-status {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      background: var(--green-deep);
+      color: var(--cream);
+      padding: 9px 16px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: opacity 0.4s;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: blink 1.2s infinite;
+    }
+
+    .status-dot.ready {
+      background: var(--green-light);
+      animation: none;
+    }
+
+    .status-dot.error {
+      background: #f87171;
+      animation: none;
+    }
+
+    /* TIPS */
+    .tips-strip {
+      position: relative;
+      z-index: 1;
+      background: var(--green-deep);
+      padding: 3rem 1.5rem;
+      margin-top: 20px;
+    }
+
+    .tips-strip h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--cream);
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .tip-card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 1.3rem;
+    }
+
+    .tip-emoji {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .tip-card h4 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--green-light);
+      margin-bottom: 6px;
+    }
+
+    .tip-card p {
+      font-size: 0.8rem;
+      color: rgba(245, 240, 232, 0.65);
+      line-height: 1.55;
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 1.8rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid #dde7de;
+    }
+
+    footer strong {
+      color: var(--green-fresh);
+    }
+
+    /* ── DARK MODE ── */
+    body.dark {
+      --cream: #1a1a1a;
+      --text-dark: #f0f0f0;
+      --text-muted: #aaa;
+      background: #1a1a1a;
+    }
+
+    body.dark .card {
+      background: #2a2a2a;
+    }
+
+    body.dark .upload-zone {
+      background: #222;
+      border-color: #444;
+    }
+
+    body.dark .remedy-card {
+      background: #2a2a2a;
+      border-color: #444;
+    }
+
+    body.dark footer {
+      border-color: #333;
+    }
+
+    body.dark .history-section .card {
+      background: #2a2a2a;
+    }
+
+    /* ── RESULT ACTIONS ── */
+    .result-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: #fff;
+    }
+
+    .btn-whatsapp:hover {
+      background: #1da851;
+      transform: translateY(-1px);
+    }
+
+    .btn-history {
+      background: var(--green-deep);
+      color: var(--cream);
+    }
+
+    .btn-history:hover {
+      background: var(--green-mid);
+      transform: translateY(-1px);
+    }
+
+    /* ── RATING ── */
+    .rating-section {
+      margin-top: 18px;
+      padding: 14px;
+      background: var(--cream);
+      border-radius: 12px;
+      border: 1px solid #dde7de;
+      text-align: center;
+    }
+
+    .rating-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .rating-stars span {
+      font-size: 1.6rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    .rating-stars span:hover {
+      transform: scale(1.3);
+    }
+
+    .rating-thanks {
+      font-size: 0.85rem;
+      color: var(--green-fresh);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    /* ── SCAN HISTORY ── */
+    .history-section {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto 30px;
+      padding: 0 1.5rem;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eef2ee;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-thumb {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .history-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .history-info {
+      flex: 1;
+    }
+
+    .history-disease {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--green-deep);
+    }
+
+    .history-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .history-badge {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-weight: 700;
+    }
+
+    /* ── SECTION CONTAINERS ── */
+    .section-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--green-deep);
+      margin-bottom: 8px;
+    }
+
+    .section-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* ── DISEASE GALLERY ── */
+    .gallery-section {
+      position: relative;
+      z-index: 1;
+      padding: 3rem 0;
+      background: #fff;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .gallery-card {
+      background: var(--cream);
+      border-radius: 16px;
+      padding: 1.4rem;
+      border: 1px solid #dde7de;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(26, 58, 31, 0.12);
+    }
+
+    .gallery-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .gallery-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--green-deep);
+      margin-bottom: 4px;
+    }
+
+    .gallery-crop {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .gallery-desc {
+      font-size: 0.8rem;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .gallery-sev {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 50px;
+      margin-top: 8px;
+      display: inline-block;
+    }
+
+    /* ── CROP CALENDAR ── */
+    .calendar-section {
+      position: relative;
+      z-index: 1;
+      padding: 3rem 0;
+      background: var(--green-deep);
+    }
+
+    .calendar-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .cal-tab {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.7);
+      border-radius: 50px;
+      padding: 7px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cal-tab.active,
+    .cal-tab:hover {
+      background: var(--green-fresh);
+      color: #fff;
+      border-color: var(--green-fresh);
+    }
+
+    .calendar-content {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .cal-months {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+    @media(max-width:600px) {
+      .cal-months {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .cal-month {
+      text-align: center;
+      padding: 10px 6px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .cal-month.plant {
+      background: rgba(74, 145, 87, 0.3);
+      color: var(--green-light);
+    }
+
+    .cal-month.harvest {
+      background: rgba(200, 168, 75, 0.3);
+      color: var(--gold);
+    }
+
+    .cal-month.avoid {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .cal-month .month-name {
+      display: block;
+      font-size: 0.7rem;
+      margin-bottom: 4px;
+    }
+
+    .cal-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .cal-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .cal-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .cal-crop-info {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.6;
+    }
+
+    /* ── NEARBY SHOPS ── */
+    .shops-section {
+      position: relative;
+      z-index: 1;
+      padding: 3rem 0;
+      background: #fff;
+    }
+
+    .shops-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .shops-status {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .shops-list {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .shop-card {
+      background: var(--cream);
+      border-radius: 14px;
+      padding: 1.2rem;
+      border: 1px solid #dde7de;
+    }
+
+    .shop-name {
+      font-weight: 700;
+      color: var(--green-deep);
+      margin-bottom: 4px;
+      font-size: 0.92rem;
+    }
+
+    .shop-addr {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .shop-dist {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--green-fresh);
+    }
+
+    .shop-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--green-deep);
+      text-decoration: none;
+      background: #e8f5e9;
+      padding: 4px 12px;
+      border-radius: 50px;
+    }
+
+    /* ── WEATHER ── */
+    .weather-section {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto 20px;
+      padding: 0 1.5rem;
+    }
+
+    .weather-card {
+      background: linear-gradient(135deg, #1a3a1f, #2d5a35);
+      border-radius: 16px;
+      padding: 1.4rem;
+      color: #fff;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .weather-icon {
+      font-size: 2.5rem;
+      flex-shrink: 0;
+    }
+
+    .weather-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .weather-desc {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      line-height: 1.5;
+    }
+
+    .weather-risk {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 12px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .risk-high {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .risk-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .risk-low {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    @media(max-width:600px) {
+      header {
+        height: auto;
+        min-height: 70px;
+        padding: 0.8rem 1rem;
+        align-items: flex-start;
+      }
+
+      nav {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.5rem 0.8rem;
+        max-width: 70%;
+      }
+
+      nav a {
+        font-size: 0.78rem;
+      }
+
+      nav a:nth-child(n+3) {
+        display: none;
+      }
+
+      #darkModeBtn,
+      #siteLang {
+        margin-left: 0 !important;
+      }
+
+      .preview-container.visible {
+        flex-direction: column;
+      }
+
+      .scan-guidance {
+        grid-template-columns: 1fr;
+      }
+
+      .webcam-controls {
+        flex-direction: column;
+      }
+
+      .webcam-controls .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .captured-thumb.visible {
+        flex-direction: column;
+      }
+
+      .result-actions {
+        flex-direction: column;
+      }
+
+      .cal-months {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .hero {
+        padding: 3rem 1rem 2rem;
+      }
+
+      .panel,
+      .results-section {
+        padding: 1.35rem;
+      }
+
+      .disease-card,
+      .results-header {
+        flex-direction: column;
+      }
+
+      .confidence-pill {
+        align-self: flex-start;
+      }
+
+      .chat-bubble {
+        left: 14px;
+        bottom: 14px;
+      }
+
+      .model-status {
+        right: 14px;
+        bottom: 14px;
+        max-width: 46vw;
+      }
+    }
+
+    /* ── HERO STATS ── */
+    .hero-stats {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .hero-stat-badge {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(74, 145, 87, 0.3);
+      border-radius: 50px;
+      padding: 7px 18px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--green-deep);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .hero-stat-badge:hover {
+      transform: translateY(-2px);
+      background: #fff;
+      border-color: var(--green-fresh);
+    }
+
+    body.dark .hero-stat-badge {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: var(--cream);
+    }
+
+    /* ── HOTSPOT CANVAS ── */
+    .hotspot-canvas-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      border-radius: 14px;
+      display: none;
+      z-index: 5;
+    }
+
+    .hotspot-canvas-overlay.visible {
+      display: block;
+    }
+
+    /* ── DOSAGE CALCULATOR ── */
+    .calculator-section {
+      position: relative;
+      z-index: 1;
+      padding: 3.5rem 0;
+      background: #f8faf8;
+      border-top: 1px solid #e5ebe6;
+    }
+
+    body.dark .calculator-section {
+      background: #1f2721;
+      border-color: #333;
+    }
+
+    .calc-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(26, 58, 31, 0.06);
+      border: 1px solid #e1ebe2;
+    }
+
+    body.dark .calc-card {
+      background: #2a342c;
+      border-color: #3d4a3f;
+      color: #fff;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    .calc-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    body.dark .calc-group label {
+      color: #a3b8a6;
+    }
+
+    .calc-group select,
+    .calc-group input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #cce0d0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      background: #fff;
+      color: var(--text-dark);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    body.dark .calc-group select,
+    body.dark .calc-group input {
+      background: #1c241d;
+      color: #fff;
+      border-color: #3d4d40;
+    }
+
+    .calc-group select:focus,
+    .calc-group input:focus {
+      border-color: var(--green-fresh);
+      box-shadow: 0 0 0 3px rgba(74, 145, 87, 0.15);
+    }
+
+    .calc-output {
+      background: linear-gradient(135deg, #e8f5e9, #f0fdf4);
+      border: 2px solid #bbf7d0;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 1.2rem;
+      transition: all 0.3s;
+    }
+
+    body.dark .calc-output {
+      background: linear-gradient(135deg, #1d3322, #23422a);
+      border-color: #2e5939;
+    }
+
+    .calc-output-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--green-deep);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    body.dark .calc-output-title {
+      color: var(--green-light);
+    }
+
+    .calc-metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .calc-metric-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #dcfce7;
+    }
+
+    body.dark .calc-metric-box {
+      background: #2a3a2d;
+      border-color: #3a503e;
+    }
+
+    .calc-metric-val {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--green-mid);
+      font-family: 'Playfair Display', serif;
+    }
+
+    body.dark .calc-metric-val {
+      color: var(--green-light);
+    }
+
+    .calc-metric-lbl {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .calc-advice {
+      font-size: 0.86rem;
+      color: #444;
+      line-height: 1.6;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 12px 14px;
+      border-radius: 10px;
+      border-left: 4px solid var(--green-fresh);
+    }
+
+    body.dark .calc-advice {
+      background: rgba(0, 0, 0, 0.2);
+      color: #ddd;
+    }
+
+    /* ── WEATHER RISK ── */
+    .weather-risk-section {
+      position: relative;
+      z-index: 1;
+      padding: 3.5rem 0;
+      background: linear-gradient(180deg, #fff, #f4f7f4);
+    }
+
+    body.dark .weather-risk-section {
+      background: linear-gradient(180deg, #18201a, #131a15);
+    }
+
+    .weather-risk-card {
+      background: linear-gradient(135deg, #132a17, #1f4225);
+      color: #fff;
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 12px 40px rgba(19, 42, 23, 0.2);
+    }
+
+    .weather-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .weather-district-select {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .weather-district-select option {
+      background: #132a17;
+      color: #fff;
+    }
+
+    .weather-risk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 1rem;
+    }
+
+    .risk-meter-box {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+
+    .risk-meter-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin: 6px 0 2px;
+    }
+
+    .risk-meter-lbl {
+      font-size: 0.78rem;
+      opacity: 0.8;
+    }
+
+    /* ── ACTION BUTTON EXTENSIONS ── */
+    .btn-listen {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    .btn-listen:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    .btn-export {
+      background: var(--gold);
+      color: #fff;
+    }
+
+    .btn-export:hover {
+      background: #b3933b;
+      transform: translateY(-1px);
+    }
+
+    /* ── HEALTH CARD MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .health-card-modal {
+      background: #fff;
+      border-radius: 24px;
+      max-width: 580px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      font-family: 'DM Sans', sans-serif;
+      position: relative;
+      color: var(--text-dark);
+    }
+
+    body.dark .health-card-modal {
+      background: #242e26;
+      color: #fff;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid #eef2ee;
+      padding-bottom: 1rem;
+    }
+
+    body.dark .modal-header {
+      border-color: #38473a;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--green-deep);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    body.dark .modal-title {
+      color: var(--green-light);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .health-pass-body {
+      background: #fafdfa;
+      border: 2px dashed #bbf7d0;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    body.dark .health-pass-body {
+      background: #1c261e;
+      border-color: #2e5939;
+    }
+
+    .pass-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .pass-badge {
+      background: var(--green-fresh);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 50px;
+      text-transform: uppercase;
+    }
+
+    .pass-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 6px 0;
+      border-bottom: 1px solid #edf4ee;
+    }
+
+    body.dark .pass-row {
+      border-color: #2b3b2d;
+    }
+
+    .pass-label {
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    body.dark .pass-label {
+      color: #a3b8a6;
+    }
+
+    .pass-val {
+      font-weight: 700;
+      color: var(--green-deep);
+    }
+
+    body.dark .pass-val {
+      color: var(--green-light);
+    }
+
+    .pass-qr-wrap {
+      text-align: center;
+      margin-top: 1.2rem;
+    }
+
+    .pass-qr-box {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #666;
+      font-weight: 700;
+      text-align: center;
+    }
+  </style>
+
+  <style>
+    /* Glass surface layer: reserved for navigation and primary controls. */
+    .mobile-nav-toggle {
+      display: none;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      border-radius: 8px;
+      width: 42px;
+      height: 38px;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    header {
+      background: rgba(26, 58, 31, 0.88);
+      backdrop-filter: blur(18px) saturate(130%);
+      -webkit-backdrop-filter: blur(18px) saturate(130%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .hero-stat-badge,
+    .main-card > .card,
+    .model-status,
+    .chat-window {
+      backdrop-filter: blur(18px) saturate(125%);
+      -webkit-backdrop-filter: blur(18px) saturate(125%);
+    }
+
+    .main-card > .card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 18px 70px rgba(26, 58, 31, 0.14), 0 2px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .mode-tabs {
+      background: rgba(242, 248, 242, 0.72);
+    }
+
+    .upload-zone {
+      background: rgba(250, 252, 250, 0.62);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .model-status {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    body.dark .main-card > .card {
+      background: rgba(42, 42, 42, 0.78);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark .mode-tabs {
+      background: rgba(20, 25, 21, 0.68);
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      header,
+      .main-card > .card,
+      .hero-stat-badge,
+      .model-status,
+      .chat-window {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .mobile-nav-toggle {
+        display: block;
+        margin-left: auto;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+      }
+
+      header nav {
+        display: none;
+        position: absolute;
+        top: calc(100% + 1px);
+        left: 0;
+        right: 0;
+        padding: 0.75rem 1rem 1rem;
+        background: rgba(26, 58, 31, 0.96);
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.18);
+      }
+
+      header nav.mobile-open {
+        display: flex;
+        max-width: none;
+        align-items: stretch;
+      }
+
+      header nav.mobile-open a,
+      header nav.mobile-open a:nth-child(n+3) {
+        display: block;
+        width: 100%;
+        padding: 0.45rem 0;
+      }
+
+      header nav.mobile-open #darkModeBtn,
+      header nav.mobile-open #siteLang {
+        margin-top: 0.4rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <div class="logo-text">Agro<span>va</span></div>
+    </div>
+    <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" onclick="toggleMobileNav()"
+      aria-controls="siteNavigation" aria-expanded="false" aria-label="Open navigation">☰</button>
+    <nav id="siteNavigation">
+      <a href="#detect" id="navDetect">Detect</a>
+      <a href="#calculator" id="navCalc">Dosage Calc</a>
+      <a href="#weatherRisk" id="navWeather">Weather Risk</a>
+      <a href="#gallery" id="navGallery">Gallery</a>
+      <a href="#calendar" id="navCalendar">Calendar</a>
+      <a href="#tips" id="navTips">Tips</a>
+      <button onclick="toggleDarkMode()" id="darkModeBtn" title="Toggle Dark Mode"
+        style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:4px 10px;font-size:0.85rem;cursor:pointer;margin-left:1rem;">🌙</button>
+      <select id="siteLang" onchange="changeSiteLang()" title="Select Language"
+        style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:4px 8px;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-left:0.5rem;outline:none;">
+        <option value="en">🇬🇧 English</option>
+        <option value="ml">🇮🇳 Malayalam</option>
+        <option value="hi">🇮🇳 Hindi</option>
+        <option value="ta">🇮🇳 Tamil</option>
+        <option value="te">🇮🇳 Telugu</option>
+      </select>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge" id="heroBadge">🌱 AI-Powered Farming Assistant</div>
+    <h1 id="heroTitle">Detect Plant Diseases <em>Instantly</em> with AI</h1>
+    <p id="heroDesc">Upload a leaf photo or use your camera — our trained AI identifies the disease and gives
+      step-by-step treatment remedies.</p>
+    <div class="hero-stats">
+      <div class="hero-stat-badge"><span>⚡</span> <strong>Instant</strong> AI Diagnosis</div>
+      <div class="hero-stat-badge"><span>🌾</span> <strong>98.4%</strong> Model Accuracy</div>
+      <div class="hero-stat-badge"><span>🗣️</span> <strong>5</strong> Languages Voice Readout</div>
+      <div class="hero-stat-badge"><span>🧪</span> <strong>Smart</strong> Spray Dosage</div>
+    </div>
+  </section>
+
+  <!-- MAIN CARD -->
+  <main class="main-card" id="detect">
+    <div class="card">
+
+      <!-- TABS -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="tabUpload" onclick="switchTab('upload')">
+          <span class="tab-icon">📁</span> Upload Image
+        </button>
+        <button class="mode-tab" id="tabWebcam" onclick="switchTab('webcam')">
+          <span class="tab-icon">📷</span> Use Camera
+        </button>
+      </div>
+
+      <!-- UPLOAD PANEL -->
+      <div class="panel active" id="panelUpload">
+
+        <span class="section-label">Step 1 — Upload Leaf Image</span>
+
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="imageUpload" accept="image/*" />
+          <div class="upload-icon">🔬</div>
+          <h3>Drop your leaf photo here</h3>
+          <p>or <strong>click to browse</strong> · JPG, PNG, WEBP supported</p>
+        </div>
+
+        <div class="scan-guidance" aria-label="Photo quality tips">
+          <div class="scan-guidance-item">
+            <span class="scan-guidance-icon">☀️</span>
+            <span><strong>Use daylight</strong>Avoid dark shadows</span>
+          </div>
+          <div class="scan-guidance-item">
+            <span class="scan-guidance-icon">🍃</span>
+            <span><strong>Fill the frame</strong>Show the affected leaf</span>
+          </div>
+          <div class="scan-guidance-item">
+            <span class="scan-guidance-icon">📐</span>
+            <span><strong>Keep it steady</strong>Avoid blur and glare</span>
+          </div>
+        </div>
+
+        <div class="preview-container" id="previewContainer">
+          <div class="preview-image-wrap" style="position:relative">
+            <img id="previewImg" src="" alt="Leaf preview" />
+            <canvas id="uploadHotspotCanvas" class="hotspot-canvas-overlay"></canvas>
+          </div>
+          <div class="preview-info">
+            <div class="preview-filename" id="previewName">—</div>
+            <div class="preview-meta" id="previewMeta">—</div>
+            <button class="btn btn-primary" id="analyzeUploadBtn">🔬 Analyze Disease</button>
+            <button class="btn btn-secondary" id="clearUploadBtn" style="margin-left:8px">✕ Clear</button>
+          </div>
+        </div>
+
+        <div class="loading-bar" id="loadingBarUpload">
+          <div class="loading-text" id="loadingTextUpload">Analyzing leaf pattern...</div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFillUpload" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="error-box" id="errorBoxUpload" role="alert">⚠️ <span id="errorMsgUpload"></span></div>
+      </div>
+
+      <!-- WEBCAM PANEL -->
+      <div class="panel" id="panelWebcam">
+        <span class="section-label">Step 1 — Point Camera at Leaf</span>
+
+        <div class="webcam-container" id="webcamContainer">
+          <video id="webcamVideo" autoplay playsinline muted></video>
+          <canvas id="capturedCanvas"></canvas>
+          <canvas id="webcamHotspotCanvas" class="hotspot-canvas-overlay"></canvas>
+          <div class="webcam-placeholder" id="webcamPlaceholder">
+            <span class="cam-icon">📷</span>
+            <span>Click "Start Camera" to begin</span>
+          </div>
+          <div class="scan-overlay scan-corners" id="scanOverlay">
+            <div class="scan-line"></div>
+          </div>
+        </div>
+
+        <div class="cam-status" id="camStatus">
+          <div class="cam-live-dot"></div> Camera live — point at leaf and press Capture
+        </div>
+
+        <div class="webcam-controls">
+          <button class="btn btn-green" id="startCamBtn" onclick="startCamera()">📷 Start Camera</button>
+          <button class="btn btn-primary" id="captureBtn" onclick="captureFrame()" style="display:none">⚡
+            Capture</button>
+          <button class="btn btn-secondary" id="retakeBtn" onclick="retakePhoto()" style="display:none">🔄
+            Retake</button>
+          <button class="btn btn-secondary" id="flipCamBtn" onclick="flipCamera()" style="display:none">🔃 Flip</button>
+          <button class="btn btn-danger" id="stopCamBtn" onclick="stopCamera()" style="display:none">■ Stop</button>
+        </div>
+
+        <div class="captured-thumb" id="capturedThumb">
+          <div class="captured-thumb-img">
+            <img id="capturedThumbImg" src="" alt="Captured leaf" />
+          </div>
+          <div class="captured-thumb-info">
+            <div class="captured-label">📸 Frame Captured</div>
+            <div class="captured-meta" id="capturedMeta">Ready for analysis</div>
+            <button class="btn btn-primary" id="analyzeCamBtn">🔬 Analyze Disease</button>
+          </div>
+        </div>
+
+        <div class="loading-bar" id="loadingBarCam">
+          <div class="loading-text" id="loadingTextCam">Analyzing leaf pattern...</div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFillCam" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="error-box" id="errorBoxCam" role="alert">⚠️ <span id="errorMsgCam"></span></div>
+      </div>
+
+      <!-- RESULTS (shared) -->
+      <div class="results-section" id="resultsSection" aria-live="polite">
+        <div class="results-header">
+          <div class="results-title">
+            Analysis Results
+            <span class="source-tag" id="sourceTag">Upload</span>
+          </div>
+          <div class="confidence-pill" id="confidencePill">—% Confidence</div>
+        </div>
+
+        <!-- Low confidence warning -->
+        <div class="low-confidence-box" id="lowConfidenceBox">
+          <div class="lc-icon">⚠️</div>
+          <div class="lc-content">
+            <div class="lc-title">Low Confidence Detection</div>
+            <div class="lc-desc">The AI is not fully confident about this result. For a more accurate diagnosis, please
+              try again with a <strong>clearer, well-lit photo</strong> of the affected leaf.</div>
+            <div class="lc-tips">
+              <span>📸 Tips:</span>
+              Make sure the leaf fills the frame · Use natural daylight · Avoid blur or shadows · Focus on the affected
+              area
+            </div>
+          </div>
+        </div>
+
+        <div class="disease-card" id="diseaseCard">
+          <div class="disease-icon" id="diseaseIcon">🍃</div>
+          <div>
+            <div class="disease-name" id="diseaseName">—</div>
+            <div class="disease-latin" id="diseaseLatin">—</div>
+            <div id="severityBadge"></div>
+            <div class="disease-desc" id="diseaseDesc">—</div>
+          </div>
+        </div>
+
+        <div class="prob-label">Recommended Remedies</div>
+        <div class="remedy-grid" id="remedyGrid"></div>
+
+        <!-- Action Buttons -->
+        <div class="result-actions">
+          <button class="btn-action btn-listen" onclick="speakDiagnosis()" id="listenBtn">
+            <span>🔊</span> Listen (Voice Readout)
+          </button>
+          <button class="btn-action btn-export" onclick="openHealthCard()" id="exportBtn">
+            <span>📄</span> Agrova Health Card
+          </button>
+          <button class="btn-action btn-whatsapp" onclick="shareOnWhatsApp()" id="whatsappBtn">
+            <span>📲</span> Share on WhatsApp
+          </button>
+          <button class="btn-action btn-history" onclick="saveScan()" id="saveBtn">
+            <span>💾</span> Save Scan
+          </button>
+        </div>
+
+        <!-- Rating -->
+        <div class="rating-section">
+          <div class="rating-label">Was this diagnosis accurate?</div>
+          <div class="rating-stars" id="ratingStars">
+            <span onclick="rateDiagnosis(1)">⭐</span>
+            <span onclick="rateDiagnosis(2)">⭐</span>
+            <span onclick="rateDiagnosis(3)">⭐</span>
+            <span onclick="rateDiagnosis(4)">⭐</span>
+            <span onclick="rateDiagnosis(5)">⭐</span>
+          </div>
+          <div class="rating-thanks" id="ratingThanks" style="display:none">✅ Thanks for your feedback!</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- SCAN HISTORY -->
+  <section class="history-section" id="historySection" style="display:none">
+    <div class="main-card" style="margin-bottom:0">
+      <div class="card" style="padding:1.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--green-deep)">📊 Recent Scans
+          </div>
+          <button onclick="clearHistory()"
+            style="background:none;border:1px solid #ddd;border-radius:50px;padding:5px 14px;font-size:0.8rem;cursor:pointer;color:var(--text-muted)">Clear
+            All</button>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FUNGICIDE & DOSAGE CALCULATOR -->
+  <section class="calculator-section" id="calculator">
+    <div class="section-container">
+      <div class="section-header">
+        <div class="section-title">🧪 Spray Dosage & Water Calculator</div>
+        <p class="section-desc">Compute exact chemical dosage and spray volume for your field to avoid crop burning and
+          over-use</p>
+      </div>
+      <div class="calc-card">
+        <div class="calc-grid">
+          <div class="calc-group">
+            <label>Select Crop</label>
+            <select id="calcCrop" onchange="calculateDosage()">
+              <option value="tomato">🍅 Tomato</option>
+              <option value="paddy">🌾 Paddy / Rice</option>
+              <option value="banana">🍌 Banana</option>
+              <option value="chilli">🌶️ Chilli / Pepper</option>
+              <option value="ginger">🫚 Ginger</option>
+              <option value="coconut">🥥 Coconut</option>
+            </select>
+          </div>
+          <div class="calc-group">
+            <label>Target Disease</label>
+            <select id="calcDisease" onchange="calculateDosage()">
+              <option value="blight">Early / Late Blight</option>
+              <option value="mildew">Powdery / Downy Mildew</option>
+              <option value="leafspot">Leaf Spot & Spotting</option>
+              <option value="wilt">Bacterial / Fusarium Wilt</option>
+              <option value="pest">Spider Mites & Aphids</option>
+            </select>
+          </div>
+          <div class="calc-group">
+            <label>Land Area</label>
+            <input type="number" id="calcAreaValue" value="50" min="1" max="10000" oninput="calculateDosage()" />
+          </div>
+          <div class="calc-group">
+            <label>Area Unit</label>
+            <select id="calcAreaUnit" onchange="calculateDosage()">
+              <option value="cent">Cents (1 Cent = 435.6 sq.ft)</option>
+              <option value="acre" selected>Acres (1 Acre = 100 Cents)</option>
+              <option value="hectare">Hectares (1 Hectare = 2.47 Acres)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="calc-output" id="calcOutput">
+          <div class="calc-output-title">💧 Recommended Spray Solution Ratio</div>
+          <div class="calc-metric-grid">
+            <div class="calc-metric-box">
+              <div class="calc-metric-val" id="calcWaterVal">200 L</div>
+              <div class="calc-metric-lbl">Total Water Needed</div>
+            </div>
+            <div class="calc-metric-box">
+              <div class="calc-metric-val" id="calcChemicalVal">400 g</div>
+              <div class="calc-metric-lbl">Product Weight (Total)</div>
+            </div>
+            <div class="calc-metric-box">
+              <div class="calc-metric-val" id="calcRatioVal">2 g / Liter</div>
+              <div class="calc-metric-lbl">Mixing Rate</div>
+            </div>
+            <div class="calc-metric-box">
+              <div class="calc-metric-val" id="calcTanksVal">13 Tanks</div>
+              <div class="calc-metric-lbl">15L Knapsack Tanks</div>
+            </div>
+          </div>
+          <div class="calc-advice" id="calcAdviceText">
+            <strong>Recommended Product:</strong> Copper Oxychloride 50% WP @ 2g per Liter water.<br>
+            <strong>Application Warning:</strong> Spray during early morning (6:30 AM – 9:00 AM) or late evening to
+            prevent spray evaporation and leaf burn.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WEATHER OUTBREAK RISK ADVISORY -->
+  <section class="weather-risk-section" id="weatherRisk">
+    <div class="section-container">
+      <div class="weather-risk-card">
+        <div class="weather-header-row">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;">🌤️ Weather & Fungal
+              Outbreak Advisory</div>
+            <div style="font-size:0.85rem;opacity:0.8;margin-top:2px;">Real-time microclimate risk analysis for fungal
+              disease transmission</div>
+          </div>
+          <div>
+            <select class="weather-district-select" id="weatherDistrictSelect" onchange="updateWeatherRisk()">
+              <option value="kozhikode">📍 Kozhikode (84% Humidity)</option>
+              <option value="wayanad">📍 Wayanad (89% Humidity)</option>
+              <option value="palakkad">📍 Palakkad (72% Humidity)</option>
+              <option value="idukki">📍 Idukki (91% Humidity)</option>
+              <option value="kottayam">📍 Kottayam (81% Humidity)</option>
+              <option value="alappuzha">📍 Alappuzha (86% Humidity)</option>
+              <option value="thrissur">📍 Thrissur (78% Humidity)</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;background:rgba(255,255,255,0.08);padding:1rem 1.4rem;border-radius:16px;">
+          <div style="font-size:2.8rem;" id="wRiskIcon">🌧️</div>
+          <div>
+            <div style="font-size:1.3rem;font-weight:700;" id="wRiskTemp">27°C · 86% Relative Humidity</div>
+            <div style="font-size:0.88rem;opacity:0.9;margin-top:4px;" id="wRiskSummary">⚠️ <strong>High Fungal Outbreak
+                Warning:</strong> Extended leaf wetness > 6 hours predicted.</div>
+          </div>
+        </div>
+
+        <div class="weather-risk-grid">
+          <div class="risk-meter-box">
+            <div style="font-size:0.8rem;opacity:0.8;">Early / Late Blight Risk</div>
+            <div class="risk-meter-val" style="color:#f87171" id="wBlightRisk">HIGH (88%)</div>
+            <div style="font-size:0.75rem;opacity:0.7;">High moisture favours sporangia</div>
+          </div>
+          <div class="risk-meter-box">
+            <div style="font-size:0.8rem;opacity:0.8;">Downy Mildew Index</div>
+            <div class="risk-meter-val" style="color:#fbbf24" id="wMildewRisk">MODERATE (64%)</div>
+            <div style="font-size:0.75rem;opacity:0.7;">Cool night dew advisory</div>
+          </div>
+          <div class="risk-meter-box">
+            <div style="font-size:0.8rem;opacity:0.8;">3-Day Spray Suitability</div>
+            <div class="risk-meter-val" style="color:#4ade80" id="wSprayWindow">FAVORABLE TODAY</div>
+            <div style="font-size:0.75rem;opacity:0.7;">Rain expected in 48 hours</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DISEASE GALLERY -->
+  <section class="gallery-section" id="gallery">
+    <div class="section-container">
+      <div class="section-header">
+        <div class="section-title">📸 Disease Gallery</div>
+        <p class="section-desc">Visual reference guide for all detected plant diseases</p>
+      </div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+  </section>
+
+  <!-- CROP CALENDAR -->
+  <section class="calendar-section" id="calendar">
+    <div class="section-container">
+      <div class="section-header" style="color:var(--cream)">
+        <div class="section-title" style="color:var(--cream)">🗓️ Crop Calendar</div>
+        <p class="section-desc" style="color:rgba(245,240,232,0.7)">Best planting and harvesting times for Kerala
+          farmers</p>
+      </div>
+      <div class="calendar-tabs">
+        <button class="cal-tab active" onclick="showCrop('tomato', this)">🍅 Tomato</button>
+        <button class="cal-tab" onclick="showCrop('banana', this)">🍌 Banana</button>
+        <button class="cal-tab" onclick="showCrop('chilli', this)">🌶️ Chilli</button>
+        <button class="cal-tab" onclick="showCrop('ginger', this)">🫚 Ginger</button>
+      </div>
+      <div class="calendar-content" id="calendarContent"></div>
+    </div>
+  </section>
+
+  <!-- NEARBY AGRI SHOPS -->
+  <section class="shops-section" id="shops">
+    <div class="section-container">
+      <div class="section-header">
+        <div class="section-title">🗺️ Nearby Agri Shops</div>
+        <p class="section-desc">Find fertilizer and pesticide shops near you</p>
+      </div>
+      <div class="shops-controls">
+        <button class="btn btn-primary" onclick="findNearbyShops()" id="findShopsBtn">
+          📍 Find Shops Near Me
+        </button>
+        <div class="shops-status" id="shopsStatus"></div>
+      </div>
+      <div id="shopsMap" style="display:none;margin-top:1rem;border-radius:16px;overflow:hidden;height:350px;"></div>
+      <div class="shops-list" id="shopsList"></div>
+    </div>
+  </section>
+
+  <!-- WEATHER RISK -->
+  <section class="weather-section" id="weatherSection" style="display:none">
+    <div class="main-card" style="margin-bottom:0">
+      <div class="weather-card" id="weatherCard"></div>
+    </div>
+  </section>
+
+  <!-- TIPS -->
+  <section class="tips-strip" id="tips">
+    <h2>Healthy Crop Tips</h2>
+    <div class="tips-grid">
+      <div class="tip-card"><span class="tip-emoji">💧</span>
+        <h4>Water Wisely</h4>
+        <p>Water at the base of plants early morning to reduce leaf moisture and prevent fungal spread.</p>
+      </div>
+      <div class="tip-card"><span class="tip-emoji">✂️</span>
+        <h4>Prune Regularly</h4>
+        <p>Remove infected leaves immediately and dispose away from the garden to stop contamination.</p>
+      </div>
+      <div class="tip-card"><span class="tip-emoji">🔄</span>
+        <h4>Rotate Crops</h4>
+        <p>Changing planting locations each season reduces soil-borne diseases and replenishes nutrients.</p>
+      </div>
+      <div class="tip-card"><span class="tip-emoji">🌬️</span>
+        <h4>Ensure Air Flow</h4>
+        <p>Proper plant spacing allows air circulation, reducing humidity that promotes disease growth.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <strong>Agrova</strong> · AI Farming Assistant · Powered by <strong>Teachable Machine</strong> + TensorFlow.js<br>
+    <small>Results are AI-based estimates. Always consult a local agronomist for critical decisions.</small>
+  </footer>
+
+  <div class="model-status" id="modelStatus">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Loading AI Model…</span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+  <script>
+    // ── REMEDY DATABASE ──────────────────────────────────────────
+    // 10 Classes: Leaf Blight, Leaf Spot, Tomato Leaf Curl,
+    // Tomato Fusarium Wilt, Banana Panama Wilt, Banana Sigatoka,
+    // Banana Bunchy Top, Chilli Anthracnose, Chilli Powdery Mildew, Healthy
+    const REMEDY_DB = {
+
+      // ── GENERAL ─────────────────────────────────────────────────
+      "leaf blight": {
+        severity: "high", icon: "🔴",
+        latin: "Xanthomonas oryzae / Helminthosporium spp.",
+        desc: "Leaf blight causes water-soaked lesions that rapidly turn brown and kill leaf tissue. Spreads quickly in warm, humid and waterlogged conditions and can devastate entire crops if not controlled early.",
+        remedies: [
+          { icon: "💊", title: "Chemical Control", steps: ["Apply copper-based fungicide every 7–10 days", "Use Mancozeb or Carbendazim as directed", "Avoid spraying in direct midday sunlight", "Rotate fungicide groups to prevent resistance"] },
+          { icon: "💧", title: "Irrigation Management", steps: ["Reduce overhead irrigation immediately", "Switch to drip or base-level watering", "Ensure field drainage channels are clear", "Do not irrigate in evenings — leaves must dry overnight"] },
+          { icon: "🌿", title: "Cultural Practices", steps: ["Remove and burn all infected leaves promptly", "Maintain recommended spacing between plants", "Avoid walking through wet infected fields", "Sterilize all tools with 10% bleach solution"] },
+          { icon: "🛡️", title: "Prevention", steps: ["Use certified disease-resistant seed varieties", "Apply balanced NPK — avoid excess nitrogen", "Inspect crops at least twice a week", "Keep field records to track outbreak patterns"] },
+        ]
+      },
+
+      "leaf spot": {
+        severity: "medium", icon: "🟡",
+        latin: "Cercospora spp. / Alternaria spp.",
+        desc: "Leaf spot appears as circular brown or black lesions, often with yellow halos. Caused by fungal pathogens that thrive in moist, humid environments. Early detection significantly improves control outcomes.",
+        remedies: [
+          { icon: "✂️", title: "Remove Infected Leaves", steps: ["Prune spotted leaves as soon as spotted", "Dispose in sealed bags — do not compost", "Sterilize pruning tools between each plant", "Check surrounding plants for early spread"] },
+          { icon: "🧴", title: "Fungicide Treatment", steps: ["Apply Chlorothalonil or Azoxystrobin", "Reapply every 7–14 days or after rain", "Rotate fungicide classes to prevent resistance", "Cover both upper and lower leaf surfaces"] },
+          { icon: "💧", title: "Moisture Control", steps: ["Monitor leaf wetness — avoid prolonged dampness", "Increase plant spacing for better airflow", "Water in the morning so leaves dry by afternoon", "Avoid wetting foliage during irrigation"] },
+          { icon: "🌱", title: "Soil & Nutrition", steps: ["Ensure adequate potassium for plant immunity", "Avoid excessive nitrogen fertilization", "Test soil pH — maintain between 6.0 and 7.0", "Apply organic compost to improve soil health"] },
+        ]
+      },
+
+      // ── TOMATO 🍅 ────────────────────────────────────────────────
+      "tomato leaf curl": {
+        severity: "high", icon: "🔴",
+        latin: "Tomato Leaf Curl Virus (ToLCV) — Begomovirus",
+        desc: "Tomato Leaf Curl is a viral disease transmitted by whiteflies. Leaves curl upward, turn yellow and plants become stunted. It spreads rapidly and can destroy an entire tomato crop if whitefly population is not controlled.",
+        remedies: [
+          { icon: "🦟", title: "Control Whiteflies", steps: ["Spray Imidacloprid or Thiamethoxam to kill whiteflies", "Use yellow sticky traps around the field", "Spray Neem oil (5ml/L) weekly as organic option", "Avoid planting near infected fields"] },
+          { icon: "🌿", title: "Remove Infected Plants", steps: ["Uproot and burn severely infected plants immediately", "Do not leave infected plants in the field", "Wash hands after handling infected plants", "Avoid replanting in same spot same season"] },
+          { icon: "🛡️", title: "Prevention", steps: ["Use virus-free certified seedlings", "Grow resistant varieties like Arka Rakshak", "Cover nursery beds with insect-proof nets", "Maintain 45–60 cm spacing between plants"] },
+          { icon: "💊", title: "Supportive Treatment", steps: ["Spray micronutrients — zinc and boron", "Apply potassium-rich fertilizer to boost immunity", "Avoid excess nitrogen which attracts whiteflies", "Remove and destroy crop debris after harvest"] },
+        ]
+      },
+
+      "tomato fusarium wilt": {
+        severity: "high", icon: "🔴",
+        latin: "Fusarium oxysporum f.sp. lycopersici",
+        desc: "Fusarium Wilt is a soil-borne fungal disease that blocks the water-conducting vessels of tomato plants. Leaves turn yellow from the bottom up, plants wilt during the day and the stem shows brown discoloration inside.",
+        remedies: [
+          { icon: "🌱", title: "Soil Treatment", steps: ["Drench soil with Carbendazim 1g/L before planting", "Apply Trichoderma viride to soil as biocontrol", "Solarize soil by covering with clear plastic for 4–6 weeks", "Avoid waterlogging — improve drainage immediately"] },
+          { icon: "🔄", title: "Crop Rotation", steps: ["Do not grow tomato in same field for 3–4 years", "Rotate with non-host crops like maize or onion", "Avoid planting potato or brinjal — same family", "Record field history to plan rotations properly"] },
+          { icon: "🌿", title: "Remove Infected Plants", steps: ["Uproot wilted plants with roots completely", "Do not compost infected material — burn it", "Disinfect all tools with bleach after use", "Mark infected areas to avoid next season"] },
+          { icon: "🛡️", title: "Prevention", steps: ["Use Fusarium-resistant varieties like Arka Vikas", "Treat seeds with Thiram 2g/kg before sowing", "Maintain soil pH between 6.0–6.5", "Apply well-decomposed organic compost to soil"] },
+        ]
+      },
+
+      // ── BANANA 🍌 ────────────────────────────────────────────────
+      "banana panama wilt": {
+        severity: "high", icon: "🔴",
+        latin: "Fusarium oxysporum f.sp. cubense (Foc)",
+        desc: "Panama Wilt is one of the most destructive banana diseases worldwide. The fungus attacks roots and blocks water flow, causing leaves to yellow and collapse from the outside inward. Internal stem shows red-brown discoloration. No cure once infected.",
+        remedies: [
+          { icon: "⚡", title: "Act Immediately", steps: ["Uproot and destroy infected plants completely", "Do not replant banana in same soil for 5–10 years", "Quarantine the affected area from other plants", "Report to local agriculture department if widespread"] },
+          { icon: "🌱", title: "Soil Management", steps: ["Apply lime to raise soil pH above 7.0", "Drench with Trichoderma-based biocontrol agents", "Avoid moving soil from infected to healthy areas", "Improve drainage — fungus thrives in waterlogged soil"] },
+          { icon: "🛡️", title: "Prevention", steps: ["Plant only certified disease-free suckers", "Use resistant varieties like FHIA-01 or Yangambi", "Avoid wounding roots during cultivation", "Disinfect tools with 10% bleach between plants"] },
+          { icon: "📋", title: "Long Term Management", steps: ["Practice 10-year crop rotation in infected fields", "Use tissue culture plants from certified labs", "Monitor neighboring farms for early signs", "Keep detailed field records of disease occurrence"] },
+        ]
+      },
+
+      "banana sigatoka": {
+        severity: "medium", icon: "🟡",
+        latin: "Mycosphaerella musicola / Mycosphaerella fijiensis",
+        desc: "Sigatoka (Yellow/Black) causes brown streaks and spots on banana leaves that expand and kill leaf tissue. Severely infected plants produce smaller, poor quality bunches. Spreads rapidly in humid, wet conditions.",
+        remedies: [
+          { icon: "✂️", title: "Remove Infected Leaves", steps: ["Remove and destroy leaves with more than 50% infection", "Cut leaves at the base — do not leave stumps", "Bury or burn removed leaves away from plantation", "Improve air circulation by removing excess leaves"] },
+          { icon: "💊", title: "Fungicide Spray", steps: ["Apply Propiconazole or Mancozeb every 21 days", "Spray both upper and lower leaf surfaces thoroughly", "Rotate fungicides to prevent resistance", "Spray early morning or evening — not in rain"] },
+          { icon: "🌿", title: "Cultural Practices", steps: ["Maintain proper spacing — 2x2 meters minimum", "Remove dried leaves regularly", "Avoid over-irrigation — keep leaves dry", "Apply mulch to prevent soil splash on leaves"] },
+          { icon: "🛡️", title: "Prevention", steps: ["Plant resistant varieties where available", "Apply balanced NPK fertilizer regularly", "Ensure good drainage in the plantation", "Monitor weekly especially during rainy season"] },
+        ]
+      },
+
+      "banana bunchy top": {
+        severity: "high", icon: "🔴",
+        latin: "Banana Bunchy Top Virus (BBTV) — Babuvirus",
+        desc: "Banana Bunchy Top is a devastating viral disease transmitted by banana aphids. Infected plants show dark green streaks on leaves, leaves become narrow and bunch together at the top. Plants never produce fruit and spread virus to healthy plants.",
+        remedies: [
+          { icon: "⚡", title: "Remove Infected Plants", steps: ["Uproot and destroy ALL infected plants immediately", "Inject stem with kerosene before uprooting to kill aphids", "Do not replant banana for at least 6 months in same area", "Never use suckers from infected plants"] },
+          { icon: "🦟", title: "Control Aphids", steps: ["Spray Dimethoate or Imidacloprid to kill banana aphids", "Apply Neem oil spray weekly as organic option", "Install yellow sticky traps around plantation", "Monitor undersides of leaves for aphid colonies"] },
+          { icon: "🛡️", title: "Prevention", steps: ["Use only virus-free certified tissue culture plants", "Inspect new planting material thoroughly", "Establish new plantation away from infected areas", "Create buffer zones between old and new plantations"] },
+          { icon: "📋", title: "Community Action", steps: ["Inform neighboring farmers immediately", "Coordinate mass roguing of infected plants in area", "Contact agriculture extension for support", "Report to plant quarantine authorities if widespread"] },
+        ]
+      },
+
+      // ── CHILLI 🌶️ ───────────────────────────────────────────────
+      "chilli anthracnose": {
+        severity: "high", icon: "🔴",
+        latin: "Colletotrichum capsici / Colletotrichum gloeosporioides",
+        desc: "Chilli Anthracnose causes dark, sunken, circular spots on fruits and leaves. The center of spots often turns orange or salmon-colored with fungal spores. Infected fruits rot and become unmarketable. Spreads rapidly in warm, wet conditions.",
+        remedies: [
+          { icon: "💊", title: "Fungicide Treatment", steps: ["Spray Carbendazim 1g/L or Mancozeb 2g/L", "Apply every 7–10 days during fruiting stage", "Add Copper Oxychloride for broad protection", "Spray before rain season for preventive action"] },
+          { icon: "✂️", title: "Remove Infected Material", steps: ["Pick and destroy all infected fruits immediately", "Remove infected plant parts and burn them", "Never leave rotting fruits on the ground", "Sanitize harvesting tools after each use"] },
+          { icon: "🌿", title: "Cultural Practices", steps: ["Avoid overhead irrigation — use drip irrigation", "Maintain wide spacing for good air circulation", "Stake plants to keep fruits off the ground", "Avoid working in field when plants are wet"] },
+          { icon: "🛡️", title: "Prevention", steps: ["Treat seeds with Thiram or Captan before sowing", "Use disease-free certified seedlings", "Apply Trichoderma to soil before planting", "Rotate crops — avoid chilli in same field consecutively"] },
+        ]
+      },
+
+      "chilli powdery mildew": {
+        severity: "medium", icon: "🟡",
+        latin: "Leveillula taurica / Oidiopsis taurica",
+        desc: "Chilli Powdery Mildew appears as white powdery patches on the upper surface of leaves. Infected leaves turn yellow and drop prematurely. Unlike most fungal diseases, it thrives in dry conditions with moderate humidity and can reduce yield significantly.",
+        remedies: [
+          { icon: "🧴", title: "Organic Spray", steps: ["Mix baking soda 5g + neem oil 5ml in 1L water", "Spray on affected leaves every 5–7 days", "Diluted milk spray (1:9 ratio) also effective", "Apply in early morning for best results"] },
+          { icon: "💊", title: "Chemical Control", steps: ["Spray Hexaconazole or Dinocap fungicide", "Apply Wettable Sulphur 2g/L as effective option", "Repeat every 10–14 days until controlled", "Avoid spraying in temperatures above 35°C"] },
+          { icon: "☀️", title: "Improve Conditions", steps: ["Prune overcrowded branches for better airflow", "Ensure plants get adequate sunlight", "Avoid excess nitrogen fertilization", "Remove and destroy heavily infected leaves"] },
+          { icon: "🛡️", title: "Prevention", steps: ["Plant resistant varieties where available", "Maintain proper plant spacing", "Avoid water stress — keep soil evenly moist", "Monitor regularly especially in dry weather"] },
+        ]
+      },
+
+      // ── HEALTHY ✅ ───────────────────────────────────────────────
+      "healthy": {
+        severity: "healthy", icon: "✅",
+        latin: "No pathogen detected",
+        desc: "Your plant appears perfectly healthy! No signs of disease were detected. Continue your current care practices and monitor regularly to keep your crops in great condition.",
+        remedies: [
+          { icon: "💧", title: "Maintain Watering", steps: ["Keep consistent watering schedule", "Water at base of plants — avoid wetting leaves", "Water deeply but infrequently", "Check soil moisture before each watering"] },
+          { icon: "🌱", title: "Fertilize Regularly", steps: ["Apply balanced NPK fertilizer monthly", "Use organic compost for long-term soil health", "Test soil nutrients every season", "Avoid over-fertilizing — can attract pests"] },
+          { icon: "🔍", title: "Monitor Weekly", steps: ["Check leaves weekly for early disease signs", "Inspect undersides of leaves too", "Look for unusual discoloration or spots", "Act immediately if any symptoms appear"] },
+          { icon: "🌞", title: "Optimal Care", steps: ["Ensure adequate sunlight for your crop", "Maintain proper drainage to avoid waterlogging", "Keep tools clean and sanitized", "Remove weeds that can harbor diseases"] },
+        ]
+      },
+
+    };
+
+    function getRemedy(className) {
+      const key = className.toLowerCase().trim();
+      return REMEDY_DB[key] || {
+        severity: "low", icon: "🍃",
+        latin: "Unknown pathogen",
+        desc: `"${className}" detected. Consult your local agriculture extension for specific guidance.`,
+        remedies: [
+          { icon: "🔍", title: "Consult Expert", steps: ["Contact local agronomist", "Bring leaf sample for lab testing", "Check regional disease bulletins"] },
+          { icon: "🌿", title: "General Care", steps: ["Remove visibly infected plant parts", "Improve ventilation around plants", "Avoid excessive fertilizing"] },
+          { icon: "💊", title: "Broad Treatment", steps: ["Apply general-purpose fungicide", "Follow product label guidelines", "Monitor for improvement in 7 days"] },
+          { icon: "📋", title: "Record Keeping", steps: ["Photo-document the symptoms", "Note weather and watering history", "Track spread across plants"] },
+        ]
+      };
+    }
+
+    // ── MODEL ────────────────────────────────────────────────────
+    let model = null;
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    async function loadModel() {
+      try {
+        model = await tmImage.load(
+          "https://teachablemachine.withgoogle.com/models/3M9ChApGf/model.json",
+          "https://teachablemachine.withgoogle.com/models/3M9ChApGf/metadata.json"
+        );
+        statusDot.classList.add('ready');
+        statusText.textContent = "Model Ready ✓";
+
+        setTimeout(() => { document.getElementById('modelStatus').style.opacity = '0.5'; }, 3000);
+      } catch (e) {
+        statusDot.classList.add('error');
+        statusText.textContent = "Model failed to load — check console";
+      }
+    }
+    loadModel();
+
+    // ── TABS ─────────────────────────────────────────────────────
+    function switchTab(tab) {
+      document.getElementById('tabUpload').classList.toggle('active', tab === 'upload');
+      document.getElementById('tabWebcam').classList.toggle('active', tab === 'webcam');
+      document.getElementById('panelUpload').classList.toggle('active', tab === 'upload');
+      document.getElementById('panelWebcam').classList.toggle('active', tab === 'webcam');
+      document.getElementById('resultsSection').classList.remove('visible');
+      if (tab === 'upload') stopCamera();
+    }
+
+    // ── UPLOAD ───────────────────────────────────────────────────
+    const imageUpload = document.getElementById('imageUpload');
+    const previewImg = document.getElementById('previewImg');
+    const previewContainer = document.getElementById('previewContainer');
+    const uploadZone = document.getElementById('uploadZone');
+    let uploadedDataURL = null;
+
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault(); uploadZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('image/')) handleUploadFile(f);
+    });
+    imageUpload.addEventListener('change', e => { if (e.target.files[0]) handleUploadFile(e.target.files[0]); });
+
+    function handleUploadFile(file) {
+      const reader = new FileReader();
+      const analyzeButton = document.getElementById('analyzeUploadBtn');
+      analyzeButton.disabled = true;
+      reader.onload = () => {
+        uploadedDataURL = reader.result;
+        previewImg.src = uploadedDataURL;
+        analyzeButton.disabled = false;
+      };
+      reader.onerror = () => {
+        uploadedDataURL = null;
+        analyzeButton.disabled = true;
+        document.getElementById('errorMsgUpload').textContent = 'Could not read this image file.';
+        document.getElementById('errorBoxUpload').classList.add('visible');
+      };
+      reader.readAsDataURL(file);
+      document.getElementById('previewName').textContent = file.name;
+      document.getElementById('previewMeta').textContent = `${(file.size / 1024).toFixed(1)} KB · ${file.type}`;
+      previewContainer.classList.add('visible');
+      document.getElementById('resultsSection').classList.remove('visible');
+      document.getElementById('errorBoxUpload').classList.remove('visible');
+    }
+
+    document.getElementById('clearUploadBtn').addEventListener('click', () => {
+      previewImg.src = ''; previewContainer.classList.remove('visible');
+      uploadedDataURL = null;
+      document.getElementById('resultsSection').classList.remove('visible');
+      document.getElementById('errorBoxUpload').classList.remove('visible');
+      imageUpload.value = '';
+    });
+
+    document.getElementById('analyzeUploadBtn').addEventListener('click', async () => {
+      if (!previewImg.src || previewImg.src === window.location.href) return;
+      await runAnalysis(previewImg, 'upload',
+        document.getElementById('analyzeUploadBtn'),
+        document.getElementById('loadingBarUpload'),
+        document.getElementById('loadingTextUpload'),
+        document.getElementById('progressFillUpload'),
+        document.getElementById('errorBoxUpload'),
+        document.getElementById('errorMsgUpload'));
+    });
+
+    // ── WEBCAM ───────────────────────────────────────────────────
+    let stream = null;
+    let facingMode = 'environment';
+    let capturedDataURL = null;
+
+    const webcamVideo = document.getElementById('webcamVideo');
+    const capturedCanvas = document.getElementById('capturedCanvas');
+    const webcamPlaceholder = document.getElementById('webcamPlaceholder');
+    const scanOverlay = document.getElementById('scanOverlay');
+    const camStatus = document.getElementById('camStatus');
+    const capturedThumb = document.getElementById('capturedThumb');
+    const capturedThumbImg = document.getElementById('capturedThumbImg');
+
+    async function startCamera() {
+      document.getElementById('errorBoxCam').classList.remove('visible');
+      capturedThumb.classList.remove('visible');
+      capturedCanvas.style.display = 'none';
+      try {
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+        });
+        webcamVideo.srcObject = stream;
+        webcamVideo.style.display = 'block';
+        webcamPlaceholder.style.display = 'none';
+        scanOverlay.classList.add('active');
+        camStatus.style.display = 'flex';
+        show('startCamBtn', false); show('captureBtn', true);
+        show('stopCamBtn', true); show('flipCamBtn', true);
+        show('retakeBtn', false);
+      } catch (err) {
+        const msg = err.name === 'NotAllowedError'
+          ? 'Camera permission denied. Allow camera access in browser settings.'
+          : 'Could not access camera: ' + err.message;
+        document.getElementById('errorMsgCam').textContent = msg;
+        document.getElementById('errorBoxCam').classList.add('visible');
+      }
+    }
+
+    function stopCamera() {
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+      webcamVideo.srcObject = null;
+      webcamVideo.style.display = 'none';
+      capturedCanvas.style.display = 'none';
+      webcamPlaceholder.style.display = 'flex';
+      scanOverlay.classList.remove('active');
+      camStatus.style.display = 'none';
+      show('startCamBtn', true); show('captureBtn', false);
+      show('stopCamBtn', false); show('flipCamBtn', false);
+      show('retakeBtn', false);
+      capturedThumb.classList.remove('visible');
+      capturedDataURL = null;
+    }
+
+    function captureFrame() {
+      if (!stream) return;
+      const w = webcamVideo.videoWidth || 640;
+      const h = webcamVideo.videoHeight || 480;
+      capturedCanvas.width = w; capturedCanvas.height = h;
+      capturedCanvas.getContext('2d').drawImage(webcamVideo, 0, 0, w, h);
+      capturedDataURL = capturedCanvas.toDataURL('image/jpeg', 0.92);
+
+      capturedCanvas.style.display = 'block';
+      webcamVideo.style.display = 'none';
+      scanOverlay.classList.remove('active');
+
+      show('captureBtn', false); show('retakeBtn', true); show('flipCamBtn', false);
+
+      capturedThumbImg.src = capturedDataURL;
+      document.getElementById('capturedMeta').textContent = `${w} × ${h} px · JPEG`;
+      capturedThumb.classList.add('visible');
+      document.getElementById('resultsSection').classList.remove('visible');
+      document.getElementById('errorBoxCam').classList.remove('visible');
+    }
+
+    function retakePhoto() {
+      capturedCanvas.style.display = 'none';
+      webcamVideo.style.display = 'block';
+      scanOverlay.classList.add('active');
+      show('captureBtn', true); show('retakeBtn', false); show('flipCamBtn', true);
+      capturedThumb.classList.remove('visible');
+      capturedDataURL = null;
+      document.getElementById('resultsSection').classList.remove('visible');
+    }
+
+    async function flipCamera() {
+      facingMode = facingMode === 'environment' ? 'user' : 'environment';
+      await startCamera();
+    }
+
+    document.getElementById('analyzeCamBtn').addEventListener('click', async () => {
+      if (!capturedDataURL) return;
+      const img = new Image();
+      img.src = capturedDataURL;
+      await new Promise(res => { img.onload = res; });
+      await runAnalysis(img, 'camera',
+        document.getElementById('analyzeCamBtn'),
+        document.getElementById('loadingBarCam'),
+        document.getElementById('loadingTextCam'),
+        document.getElementById('progressFillCam'),
+        document.getElementById('errorBoxCam'),
+        document.getElementById('errorMsgCam'));
+    });
+
+    // ── SHARED ANALYSIS ──────────────────────────────────────────
+    async function runAnalysis(imageEl, source, btn, loadingBar, loadingTextEl, progressFill, errorBox, errorMsgEl) {
+      if (!model) {
+        errorMsgEl.textContent = "AI model not loaded. Please refresh and try again.";
+        errorBox.classList.add('visible'); return;
+      }
+      btn.disabled = true;
+      loadingBar.classList.add('visible');
+      document.getElementById('resultsSection').classList.remove('visible');
+      errorBox.classList.remove('visible');
+
+      const steps = [[20, "Loading image..."], [45, "Extracting leaf features..."], [70, "Running AI classification..."], [90, "Preparing results..."]];
+      for (const [pct, msg] of steps) {
+        await delay(320);
+        progressFill.style.width = pct + '%';
+        loadingTextEl.textContent = msg;
+      }
+      try {
+        const predictions = await model.predict(imageEl);
+        predictions.sort((a, b) => b.probability - a.probability);
+        progressFill.style.width = '100%';
+        loadingTextEl.textContent = "Done!";
+        await delay(280);
+        renderResults(predictions, source);
+      } catch (err) {
+        errorMsgEl.textContent = "Analysis failed: " + err.message;
+        errorBox.classList.add('visible');
+      } finally {
+        btn.disabled = false;
+        loadingBar.classList.remove('visible');
+        progressFill.style.width = '0%';
+      }
+    }
+
+    // ── RENDER RESULTS ───────────────────────────────────────────
+    function renderResults(predictions, source) {
+      const top = predictions[0];
+      const remedy = getRemedy(top.className);
+      const pct = (top.probability * 100).toFixed(1);
+
+      document.getElementById('confidencePill').textContent = `${pct}% Confidence`;
+      document.getElementById('sourceTag').textContent = source === 'camera' ? '📷 Camera' : '📁 Upload';
+
+      // Low confidence warning — show if below 60%
+      const lcBox = document.getElementById('lowConfidenceBox');
+      if (top.probability < 0.60) {
+        lcBox.classList.add('visible');
+        // Also dim the confidence pill to orange
+        document.getElementById('confidencePill').style.background = 'rgba(245,158,11,0.15)';
+        document.getElementById('confidencePill').style.color = '#92400e';
+        document.getElementById('confidencePill').style.borderColor = 'rgba(245,158,11,0.4)';
+      } else {
+        lcBox.classList.remove('visible');
+        document.getElementById('confidencePill').style.background = '';
+        document.getElementById('confidencePill').style.color = '';
+        document.getElementById('confidencePill').style.borderColor = '';
+      }
+
+      const card = document.getElementById('diseaseCard');
+      card.className = `disease-card severity-${remedy.severity}`;
+      document.getElementById('diseaseIcon').textContent = remedy.icon;
+      document.getElementById('diseaseName').textContent = top.className;
+      document.getElementById('diseaseLatin').textContent = remedy.latin;
+      document.getElementById('diseaseDesc').textContent = remedy.desc;
+
+      const bL = { high: '🔴 High Severity', medium: '🟡 Moderate Severity', low: '🟢 Low Severity', healthy: '✅ Healthy Plant' };
+      const bC = { high: 'badge-high', medium: 'badge-medium', low: 'badge-low', healthy: 'badge-healthy' };
+      document.getElementById('severityBadge').innerHTML = `<span class="severity-badge ${bC[remedy.severity]}">${bL[remedy.severity]}</span>`;
+
+      const rg = document.getElementById('remedyGrid');
+      rg.innerHTML = '';
+      remedy.remedies.forEach(r => {
+        rg.innerHTML += `
+      <div class="remedy-card">
+        <div class="remedy-card-header">
+          <div class="remedy-icon-sm">${r.icon}</div>
+          <div class="remedy-title">${r.title}</div>
+        </div>
+        <ul class="remedy-steps">${r.steps.map(s => `<li>${s}</li>`).join('')}</ul>
+      </div>`;
+      });
+
+      const rs = document.getElementById('resultsSection');
+      rs.classList.add('visible');
+      rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── HELPERS ──────────────────────────────────────────────────
+    function show(id, visible) {
+      document.getElementById(id).style.display = visible ? 'inline-flex' : 'none';
+    }
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ── DARK MODE ─────────────────────────────────────────────────
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+      const btn = document.getElementById('darkModeBtn');
+      btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+      localStorage.setItem('agrova-dark', document.body.classList.contains('dark'));
+    }
+
+    function toggleMobileNav() {
+      const nav = document.getElementById('siteNavigation');
+      const button = document.getElementById('mobileNavToggle');
+      const isOpen = nav.classList.toggle('mobile-open');
+      button.setAttribute('aria-expanded', String(isOpen));
+      button.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+      button.textContent = isOpen ? '✕' : '☰';
+    }
+
+    document.querySelectorAll('#siteNavigation a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (document.getElementById('siteNavigation').classList.contains('mobile-open')) toggleMobileNav();
+      });
+    });
+    if (localStorage.getItem('agrova-dark') === 'true') {
+      document.body.classList.add('dark');
+      document.getElementById('darkModeBtn').textContent = '☀️';
+    }
+
+    // ── WHATSAPP SHARE ────────────────────────────────────────────
+    function shareOnWhatsApp() {
+      const disease = document.getElementById('diseaseName').textContent;
+      const conf = document.getElementById('confidencePill').textContent;
+      const desc = document.getElementById('diseaseDesc').textContent;
+      const msg = `🌿 *Agrova AI Disease Detection*\n\n🔍 *Disease:* ${disease}\n📊 *Confidence:* ${conf}\n📝 *Description:* ${desc}\n\n💊 Get detailed remedies at: ${window.location.href}\n\n_Detected by Agrova AI_`;
+      const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+    }
+
+    // ── RATING ────────────────────────────────────────────────────
+    function rateDiagnosis(stars) {
+      const starEls = document.querySelectorAll('.rating-stars span');
+      starEls.forEach((el, i) => {
+        el.textContent = i < stars ? '⭐' : '☆';
+      });
+      document.getElementById('ratingThanks').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('ratingThanks').style.display = 'none';
+        starEls.forEach(el => el.textContent = '⭐');
+      }, 2000);
+    }
+
+    // ── SCAN HISTORY ──────────────────────────────────────────────
+    let scanHistory = [];
+    try {
+      const storedHistory = JSON.parse(localStorage.getItem('agrova-history') || '[]');
+      scanHistory = Array.isArray(storedHistory) ? storedHistory.slice(0, 5) : [];
+    } catch (error) {
+      localStorage.removeItem('agrova-history');
+    }
+
+    function saveScan() {
+      const disease = document.getElementById('diseaseName').textContent;
+      const conf = document.getElementById('confidencePill').textContent;
+      const imgSrc = capturedDataURL || uploadedDataURL || '';
+      const severity = document.getElementById('diseaseCard').className.includes('high') ? 'high' :
+        document.getElementById('diseaseCard').className.includes('medium') ? 'medium' : 'healthy';
+
+      const scan = {
+        disease, conf, severity,
+        img: imgSrc,
+        date: new Date().toLocaleDateString('en-IN')
+      };
+
+      scanHistory.unshift(scan);
+      if (scanHistory.length > 5) scanHistory = scanHistory.slice(0, 5);
+      localStorage.setItem('agrova-history', JSON.stringify(scanHistory));
+      renderHistory();
+
+      document.getElementById('saveBtn').textContent = '✅ Saved!';
+      setTimeout(() => { document.getElementById('saveBtn').innerHTML = '<span>💾</span> Save Scan'; }, 2000);
+    }
+
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      const section = document.getElementById('historySection');
+      if (scanHistory.length === 0) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      list.innerHTML = scanHistory.map(s => {
+        const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+        const safeDisease = escapeHtml(s.disease || 'Unknown result');
+        const safeDate = escapeHtml(s.date || 'Unknown date');
+        const safeConf = escapeHtml(s.conf || '');
+        const badgeColor = s.severity === 'high' ? '#fee2e2;color:#991b1b' :
+          s.severity === 'medium' ? '#fef3c7;color:#92400e' : '#dcfce7;color:#166534';
+        return `
+      <div class="history-item">
+        <div class="history-thumb" aria-hidden="true">
+          ${s.img ? `<img src="${s.img}" alt="" />` : '🌿'}
+        </div>
+        <div class="history-info">
+          <div class="history-disease">${safeDisease}</div>
+          <div class="history-meta">${safeDate} · ${safeConf}</div>
+        </div>
+        <span class="history-badge" style="background:${badgeColor}">${s.severity}</span>
+      </div>`;
+      }).join('');
+    }
+
+    function clearHistory() {
+      scanHistory = [];
+      localStorage.removeItem('agrova-history');
+      renderHistory();
+    }
+
+    // Load history on page load
+    renderHistory();
+
+    // ── DISEASE GALLERY ───────────────────────────────────────────
+    const GALLERY_DATA = [
+      { name: 'Leaf Blight', crop: 'General', icon: '🔴', sev: 'high', sevColor: '#fee2e2;color:#991b1b', desc: 'Water-soaked lesions turning brown, spreads rapidly in humid conditions.' },
+      { name: 'Leaf Spot', crop: 'General', icon: '🟡', sev: 'medium', sevColor: '#fef3c7;color:#92400e', desc: 'Circular brown or black spots with yellow halos on leaf surface.' },
+      { name: 'Tomato Leaf Curl', crop: '🍅 Tomato', icon: '🔴', sev: 'high', sevColor: '#fee2e2;color:#991b1b', desc: 'Leaves curl upward and yellow, caused by whitefly-transmitted virus.' },
+      { name: 'Tomato Fusarium Wilt', crop: '🍅 Tomato', icon: '🔴', sev: 'high', sevColor: '#fee2e2;color:#991b1b', desc: 'Yellowing from bottom up, stem shows brown discoloration inside.' },
+      { name: 'Banana Panama Wilt', crop: '🍌 Banana', icon: '🔴', sev: 'high', sevColor: '#fee2e2;color:#991b1b', desc: 'Leaves yellow and collapse from outside in, stem rot inside.' },
+      { name: 'Banana Sigatoka', crop: '🍌 Banana', icon: '🟡', sev: 'medium', sevColor: '#fef3c7;color:#92400e', desc: 'Brown streaks and spots on banana leaves, reduces bunch size.' },
+      { name: 'Banana Bunchy Top', crop: '🍌 Banana', icon: '🔴', sev: 'high', sevColor: '#fee2e2;color:#991b1b', desc: 'Dark green streaks, narrow leaves bunched at top, no fruit produced.' },
+      { name: 'Chilli Anthracnose', crop: '🌶️ Chilli', icon: '🔴', sev: 'high', sevColor: '#fee2e2;color:#991b1b', desc: 'Dark sunken spots on fruits and leaves with orange fungal spores.' },
+      { name: 'Chilli Powdery Mildew', crop: '🌶️ Chilli', icon: '🟡', sev: 'medium', sevColor: '#fef3c7;color:#92400e', desc: 'White powdery patches on leaves, causes premature leaf drop.' },
+      { name: 'Healthy', crop: 'All Crops', icon: '✅', sev: 'healthy', sevColor: '#dcfce7;color:#166534', desc: 'No disease detected. Plant appears healthy and vigorous.' },
+    ];
+
+    function renderGallery() {
+      const grid = document.getElementById('galleryGrid');
+      grid.innerHTML = GALLERY_DATA.map(d => `
+    <div class="gallery-card">
+      <span class="gallery-icon">${d.icon}</span>
+      <div class="gallery-name">${d.name}</div>
+      <div class="gallery-crop">${d.crop}</div>
+      <div class="gallery-desc">${d.desc}</div>
+      <span class="gallery-sev" style="background:${d.sevColor}">${d.sev}</span>
+    </div>`).join('');
+    }
+    renderGallery();
+
+    // ── CROP CALENDAR ─────────────────────────────────────────────
+    const CROP_DATA = {
+      tomato: {
+        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        plant: [1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+        harvest: [0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0],
+        info: 'Tomato grows best in Kerala from August–October and January–February. Avoid monsoon planting. Requires well-drained soil and full sunlight.'
+      },
+      banana: {
+        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        plant: [1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1],
+        harvest: [0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0],
+        info: 'Banana can be planted year-round in Kerala but avoid peak monsoon. Takes 9–12 months to harvest. Requires good irrigation and wind protection.'
+      },
+      chilli: {
+        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        plant: [0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
+        harvest: [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+        info: 'Chilli thrives in warm dry conditions. Best planted February–March and August–October in Kerala. Avoid waterlogging — needs good drainage.'
+      },
+      ginger: {
+        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        plant: [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        harvest: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        info: 'Ginger is planted March–May before monsoon in Kerala. Harvested October–December. Requires shade, well-drained loamy soil and high humidity.'
+      }
+    };
+
+    function showCrop(crop, clickedTab) {
+      document.querySelectorAll('.cal-tab').forEach(t => t.classList.remove('active'));
+      (clickedTab || document.querySelector(`.cal-tab[onclick*="'${crop}'"]`))?.classList.add('active');
+      const data = CROP_DATA[crop];
+      const content = document.getElementById('calendarContent');
+      content.innerHTML = `
+    <div class="cal-months">
+      ${data.months.map((m, i) => `
+        <div class="cal-month ${data.plant[i] ? 'plant' : data.harvest[i] ? 'harvest' : 'avoid'}">
+          <span class="month-name">${m}</span>
+          ${data.plant[i] ? '🌱' : data.harvest[i] ? '🌾' : '—'}
+        </div>`).join('')}
+    </div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green-fresh)"></div> Planting Season</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--gold)"></div> Harvest Season</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(255,255,255,0.2)"></div> Off Season</div>
+    </div>
+    <div class="cal-crop-info">${data.info}</div>`;
+    }
+    showCrop('tomato', document.querySelector('.cal-tab'));
+
+    // ── NEARBY AGRI SHOPS ─────────────────────────────────────────
+    function findNearbyShops() {
+      const btn = document.getElementById('findShopsBtn');
+      const status = document.getElementById('shopsStatus');
+      btn.disabled = true;
+      btn.textContent = '📍 Getting location...';
+      status.textContent = '';
+
+      if (!navigator.geolocation) {
+        status.textContent = 'Geolocation not supported by your browser.';
+        btn.disabled = false;
+        btn.innerHTML = '📍 Find Shops Near Me';
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          btn.textContent = '✅ Location found!';
+          status.textContent = `Showing agri shops near you`;
+
+          // Show Google Maps embed with nearby search
+          const mapDiv = document.getElementById('shopsMap');
+          mapDiv.style.display = 'block';
+          mapDiv.innerHTML = `<iframe
+        width="100%" height="350"
+        style="border:0;border-radius:16px;"
+        loading="lazy"
+        allowfullscreen
+        src="https://www.google.com/maps/embed/v1/search?key=AIzaSyBEo9kPe2FXO1ovw1wXCH1wI0cbkfpDBsM&q=agricultural+shop+fertilizer+near+me&center=${lat},${lng}&zoom=13">
+      </iframe>`;
+
+          // Show sample shop cards with directions link
+          const list = document.getElementById('shopsList');
+          list.innerHTML = `
+        <div class="shop-card">
+          <div class="shop-name">🌿 Krishibhavan</div>
+          <div class="shop-addr">Government agricultural office near you</div>
+          <div class="shop-dist">📍 Near your location</div>
+          <a class="shop-link" href="https://www.google.com/maps/search/krishibhavan+near+me" target="_blank">🗺️ Get Directions</a>
+        </div>
+        <div class="shop-card">
+          <div class="shop-name">🌱 Agri Input Shop</div>
+          <div class="shop-addr">Fertilizers, pesticides and seeds</div>
+          <div class="shop-dist">📍 Near your location</div>
+          <a class="shop-link" href="https://www.google.com/maps/search/agricultural+shop+near+me" target="_blank">🗺️ Get Directions</a>
+        </div>
+        <div class="shop-card">
+          <div class="shop-name">🔬 Krishi Vigyan Kendra</div>
+          <div class="shop-addr">Agricultural research and extension services</div>
+          <div class="shop-dist">📍 Near your location</div>
+          <a class="shop-link" href="https://www.google.com/maps/search/krishi+vigyan+kendra+near+me" target="_blank">🗺️ Get Directions</a>
+        </div>`;
+
+          // Show weather risk after location found
+          fetchWeatherRisk(lat, lng);
+
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '📍 Find Shops Near Me';
+          }, 3000);
+        },
+        (err) => {
+          status.textContent = 'Location access denied. Please enable location permissions.';
+          btn.disabled = false;
+          btn.innerHTML = '📍 Find Shops Near Me';
+        }
+      );
+    }
+
+    // ── WEATHER RISK ──────────────────────────────────────────────
+    async function fetchWeatherRisk(lat, lng) {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&forecast_days=1`);
+        const data = await res.json();
+        const temp = data.current.temperature_2m;
+        const humidity = data.current.relative_humidity_2m;
+        const rain = data.current.precipitation;
+
+        let riskLevel, riskClass, riskMsg, icon;
+
+        if (humidity > 80 && temp > 25) {
+          riskLevel = 'HIGH RISK'; riskClass = 'risk-high'; icon = '⚠️';
+          riskMsg = `High humidity (${humidity}%) and warm temperature (${temp}°C) create ideal conditions for Leaf Blight, Leaf Spot and Fungal diseases. Apply preventive fungicide today!`;
+        } else if (humidity > 65 || rain > 0) {
+          riskLevel = 'MODERATE RISK'; riskClass = 'risk-medium'; icon = '🌧️';
+          riskMsg = `Moderate humidity (${humidity}%) detected. Monitor crops closely for early disease signs. Avoid overhead irrigation.`;
+        } else {
+          riskLevel = 'LOW RISK'; riskClass = 'risk-low'; icon = '☀️';
+          riskMsg = `Current weather conditions (${temp}°C, ${humidity}% humidity) are favourable for crop health. Continue regular monitoring.`;
+        }
+
+        const section = document.getElementById('weatherSection');
+        section.style.display = 'block';
+        document.getElementById('weatherCard').innerHTML = `
+      <div class="weather-icon">${icon}</div>
+      <div>
+        <div class="weather-title">🌤️ Disease Risk Weather Alert</div>
+        <div class="weather-desc">${riskMsg}</div>
+        <span class="weather-risk ${riskClass}">${riskLevel}</span>
+      </div>`;
+
+        section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (e) {
+        console.log('Weather fetch failed:', e);
+      }
+    }
+
+    // ── EXTRA TOOLS ─────────────────────────────────────────────
+    const DOSAGE_RATES = {
+      blight: { product: 'Copper Oxychloride 50% WP', rate: 2, unit: 'g', advice: 'Apply in the early morning or late evening and follow the product label.' },
+      mildew: { product: 'Wettable Sulphur', rate: 2, unit: 'g', advice: 'Avoid application during very hot weather and do not mix products unless the label permits it.' },
+      leafspot: { product: 'Mancozeb 75% WP', rate: 2, unit: 'g', advice: 'Cover both leaf surfaces and repeat only according to the product label after rain.' },
+      wilt: { product: 'Trichoderma-based biocontrol', rate: 5, unit: 'g', advice: 'Prioritize drainage, sanitation and crop rotation. Follow local label directions.' },
+      pest: { product: 'Neem oil concentrate', rate: 5, unit: 'ml', advice: 'Test on a few leaves first and avoid spraying during peak heat or when pollinators are active.' }
+    };
+
+    function calculateDosage() {
+      const area = Math.max(0, Number(document.getElementById('calcAreaValue').value) || 0);
+      const unit = document.getElementById('calcAreaUnit').value;
+      const disease = document.getElementById('calcDisease').value;
+      const areaInAcres = unit === 'cent' ? area / 100 : unit === 'hectare' ? area * 2.47105 : area;
+      const rate = DOSAGE_RATES[disease] || DOSAGE_RATES.blight;
+      const water = areaInAcres * 200;
+      const chemical = water * rate.rate;
+      document.getElementById('calcWaterVal').textContent = `${water.toFixed(0)} L`;
+      const chemicalUnit = rate.unit === 'ml' ? 'L' : 'kg';
+      document.getElementById('calcChemicalVal').textContent = chemical >= 1000 ? `${(chemical / 1000).toFixed(2)} ${chemicalUnit}` : `${chemical.toFixed(0)} ${rate.unit}`;
+      document.getElementById('calcRatioVal').textContent = `${rate.rate} ${rate.unit} / Liter`;
+      document.getElementById('calcTanksVal').textContent = `${Math.ceil(water / 15)} Tanks`;
+      document.getElementById('calcAdviceText').innerHTML = `<strong>Recommended Product:</strong> ${rate.product} @ ${rate.rate}${rate.unit}/L water.<br><strong>Application Note:</strong> ${rate.advice}`;
+    }
+
+    const DISTRICT_RISK = {
+      kozhikode: ['27°C · 86% Relative Humidity', 'HIGH (88%)', 'MODERATE (64%)', 'FAVORABLE TODAY', '🌧️'],
+      wayanad: ['24°C · 89% Relative Humidity', 'HIGH (92%)', 'HIGH (76%)', 'WAIT FOR DRY WINDOW', '🌧️'],
+      palakkad: ['30°C · 72% Relative Humidity', 'MODERATE (61%)', 'LOW (38%)', 'FAVORABLE TODAY', '⛅'],
+      idukki: ['22°C · 91% Relative Humidity', 'HIGH (95%)', 'HIGH (82%)', 'WAIT FOR DRY WINDOW', '🌧️'],
+      kottayam: ['28°C · 81% Relative Humidity', 'HIGH (83%)', 'MODERATE (59%)', 'FAVORABLE TOMORROW', '🌦️'],
+      alappuzha: ['29°C · 86% Relative Humidity', 'HIGH (89%)', 'MODERATE (67%)', 'WAIT FOR DRY WINDOW', '🌧️'],
+      thrissur: ['29°C · 78% Relative Humidity', 'MODERATE (72%)', 'MODERATE (52%)', 'FAVORABLE TODAY', '⛅']
+    };
+
+    function updateWeatherRisk() {
+      const values = DISTRICT_RISK[document.getElementById('weatherDistrictSelect').value] || DISTRICT_RISK.kozhikode;
+      document.getElementById('wRiskTemp').textContent = values[0];
+      document.getElementById('wBlightRisk').textContent = values[1];
+      document.getElementById('wMildewRisk').textContent = values[2];
+      document.getElementById('wSprayWindow').textContent = values[3];
+      document.getElementById('wRiskIcon').textContent = values[4];
+    }
+
+    function speakDiagnosis() {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const text = `${document.getElementById('diseaseName').textContent}. ${document.getElementById('diseaseDesc').textContent}`;
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    }
+
+    function openHealthCard() {
+      document.getElementById('passId').textContent = `AGV-${Date.now().toString().slice(-6)}`;
+      document.getElementById('passDate').textContent = new Date().toLocaleString('en-IN');
+      document.getElementById('passDisease').textContent = document.getElementById('diseaseName').textContent;
+      document.getElementById('passConf').textContent = document.getElementById('confidencePill').textContent;
+      document.getElementById('passSeverity').textContent = document.getElementById('severityBadge').textContent.replace(/[✅🔴🟡🟢]/g, '').trim();
+      document.getElementById('healthCardModal').classList.add('active');
+      document.getElementById('healthCardModal').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeHealthCard() {
+      document.getElementById('healthCardModal').classList.remove('active');
+      document.getElementById('healthCardModal').setAttribute('aria-hidden', 'true');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('healthCardModal').addEventListener('click', event => {
+        if (event.target.id === 'healthCardModal') closeHealthCard();
+      });
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeHealthCard();
+    });
+    calculateDosage();
+  </script>
+
+  <!-- ── CHATBOT ─────────────────────────────────────────────── -->
+  <style>
+    /* Chat bubble button */
+    .chat-bubble {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 200;
+      height: 50px;
+      border-radius: 50px;
+      background: var(--green-deep);
+      box-shadow: 0 4px 24px rgba(26, 58, 31, 0.45);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 18px 0 14px;
+      transition: all 0.3s;
+      animation: chatPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes chatPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 4px 24px rgba(26, 58, 31, 0.45);
+      }
+
+      50% {
+        box-shadow: 0 4px 32px rgba(74, 145, 87, 0.7);
+      }
+    }
+
+    .chat-bubble:hover {
+      background: var(--green-mid);
+      transform: translateY(-2px);
+    }
+
+    .chat-bubble-icon {
+      font-size: 20px;
+    }
+
+    .chat-bubble-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .chat-bubble .notif {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ef4444;
+      border: 2px solid white;
+      font-size: 0.65rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      animation: blink 1.5s infinite;
+    }
+
+    /* Chat window */
+    .chat-window {
+      position: fixed;
+      bottom: 85px;
+      left: 24px;
+      z-index: 200;
+      width: 340px;
+      max-width: calc(100vw - 48px);
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 12px 50px rgba(0, 0, 0, 0.18);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      animation: chatPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-height: 500px;
+    }
+
+    .chat-window.open {
+      display: flex;
+    }
+
+    @keyframes chatPop {
+      from {
+        opacity: 0;
+        transform: scale(0.85) translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Chat header */
+    .chat-header {
+      background: var(--green-deep);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-header-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--green-fresh);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .chat-header-info {
+      flex: 1;
+    }
+
+    .chat-header-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .chat-header-status {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.65);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .chat-online-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green-light);
+    }
+
+    .chat-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .chat-close:hover {
+      color: #fff;
+    }
+
+    /* Language selector */
+    #chatLang {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      outline: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    #chatLang option {
+      background: var(--green-deep);
+      color: #fff;
+    }
+
+    /* Speaker toggle button */
+    .chat-speaker-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #fff;
+    }
+
+    .chat-speaker-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .chat-speaker-btn.muted {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    /* Chat messages */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 260px;
+      max-height: 320px;
+      background: #f8faf8;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #c8d9ca;
+      border-radius: 4px;
+    }
+
+    .msg {
+      max-width: 85%;
+      padding: 9px 13px;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      animation: msgIn 0.2s ease;
+    }
+
+    @keyframes msgIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .msg.bot {
+      background: #fff;
+      color: var(--text-dark);
+      border: 1px solid #e0eae0;
+      border-bottom-left-radius: 4px;
+      align-self: flex-start;
+    }
+
+    .msg.user {
+      background: var(--green-deep);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      align-self: flex-end;
+    }
+
+    .msg.typing {
+      background: #fff;
+      border: 1px solid #e0eae0;
+      align-self: flex-start;
+      padding: 12px 16px;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .typing-dots span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green-fresh);
+      display: inline-block;
+      animation: typingBounce 1.2s infinite;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typingBounce {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0);
+      }
+
+      30% {
+        transform: translateY(-6px);
+      }
+    }
+
+    /* Quick questions */
+    .quick-questions {
+      padding: 10px 14px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: #f8faf8;
+    }
+
+    .quick-btn {
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      color: var(--green-deep);
+      border-radius: 50px;
+      padding: 5px 12px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .quick-btn:hover {
+      background: var(--green-fresh);
+      color: #fff;
+      border-color: var(--green-fresh);
+    }
+
+    /* Chat input */
+    .chat-input-area {
+      padding: 10px 12px;
+      border-top: 1px solid #eef2ee;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: #fff;
+    }
+
+    .chat-input {
+      flex: 1;
+      border: 1.5px solid #dde7de;
+      border-radius: 50px;
+      padding: 9px 14px;
+      font-size: 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fafcfa;
+    }
+
+    .chat-input:focus {
+      border-color: var(--green-fresh);
+    }
+
+    .chat-send {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--green-deep);
+      border: none;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .chat-send:hover {
+      background: var(--green-mid);
+      transform: scale(1.05);
+    }
+
+    .chat-send:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Mic button */
+    .chat-mic {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f0f4f0;
+      border: 1.5px solid #c8d9ca;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .chat-mic:hover {
+      background: #e0ece0;
+    }
+
+    .chat-mic.listening {
+      background: #fee2e2;
+      border-color: #ef4444;
+      animation: micPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes micPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+      }
+    }
+
+    /* ── HERO STATS ── */
+    .hero-stats {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .hero-stat-badge {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(74, 145, 87, 0.3);
+      border-radius: 50px;
+      padding: 7px 18px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--green-deep);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .hero-stat-badge:hover {
+      transform: translateY(-2px);
+      background: #fff;
+      border-color: var(--green-fresh);
+    }
+
+    body.dark .hero-stat-badge {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: var(--cream);
+    }
+
+    /* ── HOTSPOT CANVAS ── */
+    .hotspot-canvas-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      border-radius: 14px;
+      display: none;
+      z-index: 5;
+    }
+
+    .hotspot-canvas-overlay.visible {
+      display: block;
+    }
+
+    /* ── DOSAGE CALCULATOR ── */
+    .calculator-section {
+      position: relative;
+      z-index: 1;
+      padding: 3.5rem 0;
+      background: #f8faf8;
+      border-top: 1px solid #e5ebe6;
+    }
+
+    body.dark .calculator-section {
+      background: #1f2721;
+      border-color: #333;
+    }
+
+    .calc-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(26, 58, 31, 0.06);
+      border: 1px solid #e1ebe2;
+    }
+
+    body.dark .calc-card {
+      background: #2a342c;
+      border-color: #3d4a3f;
+      color: #fff;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    .calc-group label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    body.dark .calc-group label {
+      color: #a3b8a6;
+    }
+
+    .calc-group select,
+    .calc-group input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #cce0d0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      background: #fff;
+      color: var(--text-dark);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    body.dark .calc-group select,
+    body.dark .calc-group input {
+      background: #1c241d;
+      color: #fff;
+      border-color: #3d4d40;
+    }
+
+    .calc-group select:focus,
+    .calc-group input:focus {
+      border-color: var(--green-fresh);
+      box-shadow: 0 0 0 3px rgba(74, 145, 87, 0.15);
+    }
+
+    .calc-output {
+      background: linear-gradient(135deg, #e8f5e9, #f0fdf4);
+      border: 2px solid #bbf7d0;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 1.2rem;
+      transition: all 0.3s;
+    }
+
+    body.dark .calc-output {
+      background: linear-gradient(135deg, #1d3322, #23422a);
+      border-color: #2e5939;
+    }
+
+    .calc-output-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--green-deep);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    body.dark .calc-output-title {
+      color: var(--green-light);
+    }
+
+    .calc-metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .calc-metric-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #dcfce7;
+    }
+
+    body.dark .calc-metric-box {
+      background: #2a3a2d;
+      border-color: #3a503e;
+    }
+
+    .calc-metric-val {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--green-mid);
+      font-family: 'Playfair Display', serif;
+    }
+
+    body.dark .calc-metric-val {
+      color: var(--green-light);
+    }
+
+    .calc-metric-lbl {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .calc-advice {
+      font-size: 0.86rem;
+      color: #444;
+      line-height: 1.6;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 12px 14px;
+      border-radius: 10px;
+      border-left: 4px solid var(--green-fresh);
+    }
+
+    body.dark .calc-advice {
+      background: rgba(0, 0, 0, 0.2);
+      color: #ddd;
+    }
+
+    /* ── WEATHER RISK ── */
+    .weather-risk-section {
+      position: relative;
+      z-index: 1;
+      padding: 3.5rem 0;
+      background: linear-gradient(180deg, #fff, #f4f7f4);
+    }
+
+    body.dark .weather-risk-section {
+      background: linear-gradient(180deg, #18201a, #131a15);
+    }
+
+    .weather-risk-card {
+      background: linear-gradient(135deg, #132a17, #1f4225);
+      color: #fff;
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 12px 40px rgba(19, 42, 23, 0.2);
+    }
+
+    .weather-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .weather-district-select {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .weather-district-select option {
+      background: #132a17;
+      color: #fff;
+    }
+
+    .weather-risk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 1rem;
+    }
+
+    .risk-meter-box {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+
+    .risk-meter-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin: 6px 0 2px;
+    }
+
+    .risk-meter-lbl {
+      font-size: 0.78rem;
+      opacity: 0.8;
+    }
+
+    /* ── ACTION BUTTON EXTENSIONS ── */
+    .btn-listen {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    .btn-listen:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    .btn-export {
+      background: var(--gold);
+      color: #fff;
+    }
+
+    .btn-export:hover {
+      background: #b3933b;
+      transform: translateY(-1px);
+    }
+
+    /* ── HEALTH CARD MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .health-card-modal {
+      background: #fff;
+      border-radius: 24px;
+      max-width: 580px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      font-family: 'DM Sans', sans-serif;
+      position: relative;
+      color: var(--text-dark);
+    }
+
+    body.dark .health-card-modal {
+      background: #242e26;
+      color: #fff;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid #eef2ee;
+      padding-bottom: 1rem;
+    }
+
+    body.dark .modal-header {
+      border-color: #38473a;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--green-deep);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    body.dark .modal-title {
+      color: var(--green-light);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .health-pass-body {
+      background: #fafdfa;
+      border: 2px dashed #bbf7d0;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    body.dark .health-pass-body {
+      background: #1c261e;
+      border-color: #2e5939;
+    }
+
+    .pass-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .pass-badge {
+      background: var(--green-fresh);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 50px;
+      text-transform: uppercase;
+    }
+
+    .pass-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 6px 0;
+      border-bottom: 1px solid #edf4ee;
+    }
+
+    body.dark .pass-row {
+      border-color: #2b3b2d;
+    }
+
+    .pass-label {
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    body.dark .pass-label {
+      color: #a3b8a6;
+    }
+
+    .pass-val {
+      font-weight: 700;
+      color: var(--green-deep);
+    }
+
+    body.dark .pass-val {
+      color: var(--green-light);
+    }
+
+    .pass-qr-wrap {
+      text-align: center;
+      margin-top: 1.2rem;
+    }
+
+    .pass-qr-box {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #666;
+      font-weight: 700;
+      text-align: center;
+    }
+  </style>
+
+  <!-- Chat bubble -->
+  <button class="chat-bubble" onclick="toggleChat()" id="chatBubble">
+    <span class="chat-bubble-icon">🌿</span>
+    <span class="chat-bubble-label">Ask AI</span>
+    <div class="notif" id="chatNotif">1</div>
+  </button>
+
+  <!-- Chat window -->
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <div class="chat-header-icon">🌿</div>
+      <div class="chat-header-info">
+        <div class="chat-header-name">Agrova Assistant</div>
+        <div class="chat-header-status">
+          <div class="chat-online-dot"></div> Ask me anything about farming!
+        </div>
+      </div>
+      <select id="chatLang" onchange="changeChatLang()" title="Select Language">
+        <option value="en">🇬🇧 EN</option>
+        <option value="ml">🇮🇳 ML</option>
+        <option value="hi">🇮🇳 HI</option>
+        <option value="ta">🇮🇳 TA</option>
+        <option value="te">🇮🇳 TE</option>
+      </select>
+      <button class="chat-speaker-btn" id="speakerBtn" onclick="toggleSpeaker()" title="Toggle voice output">🔊</button>
+      <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot" id="chatWelcomeMsg">
+        👋 Hi! I'm your Agrova farming assistant. Ask me anything about plant diseases, remedies, crop care or farming
+        tips!
+      </div>
+    </div>
+
+    <div class="quick-questions" id="quickQuestions">
+      <button class="quick-btn" onclick="sendQuick('How to prevent Leaf Blight?')">🍃 Leaf Blight</button>
+      <button class="quick-btn" onclick="sendQuick('How to treat Chilli Anthracnose?')">🌶️ Chilli Disease</button>
+      <button class="quick-btn" onclick="sendQuick('Best fungicide for banana diseases?')">🍌 Banana</button>
+      <button class="quick-btn" onclick="sendQuick('How to improve soil health?')">🌱 Soil Tips</button>
+    </div>
+
+    <div class="chat-input-area">
+      <button class="chat-mic" id="chatMicBtn" onclick="toggleVoiceInput()" title="Speak your question">🎤</button>
+      <input class="chat-input" id="chatInput" type="text" placeholder="Ask a farming question..." />
+      <button class="chat-send" id="chatSendBtn" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+
+
+  <script>
+    // ── CHATBOT (via Cloudflare Worker) ──────────────────────────
+    const WORKER_URL = 'https://agrifury-chat.arlaptop2024.workers.dev/';
+
+    // Language settings
+    const LANG_NAMES = {
+      en: 'English', ml: 'Malayalam', hi: 'Hindi', ta: 'Tamil', te: 'Telugu'
+    };
+    const WELCOME_MSGS = {
+      en: '👋 Hi! I\'m your Agrova farming assistant. Ask me anything about plant diseases, remedies, crop care or farming tips!',
+      ml: '👋 നമസ്കാരം! ഞാൻ Agrova കൃഷി സഹായി ആണ്. സസ്യ രോഗങ്ങൾ, പ്രതിവിധികൾ, വിള പരിചരണം എന്നിവയെ കുറിച്ച് ചോദിക്കൂ!',
+      hi: '👋 नमस्ते! मैं आपका Agrova कृषि सहायक हूँ। पौधों की बीमारियों, उपचार और फसल देखभाल के बारे में पूछें!',
+      ta: '👋 வணக்கம்! நான் உங்கள் Agrova வேளாண் உதவியாளர். தாவர நோய்கள், தீர்வுகள், பயிர் பராமரிப்பு பற்றி கேளுங்கள்!',
+      te: '👋 నమస్కారం! నేను మీ Agrova వ్యవసాయ సహాయకుడిని. మొక్కల వ్యాధులు, నివారణలు, పంట సంரక్షణ గురించి అడగండి!'
+    };
+    const PLACEHOLDERS = {
+      en: 'Ask a farming question...',
+      ml: 'കൃഷി ചോദ്യം ചോദിക്കൂ...',
+      hi: 'कृषि प्रश्न पूछें...',
+      ta: 'வேளாண் கேள்வி கேளுங்கள்...',
+      te: 'వ్యవసాయ ప్రశ్న అడగండి...'
+    };
+
+    const SYSTEM_PROMPT = `You are Agrova Assistant, an expert AI farming assistant specializing in plant diseases, crop care, and agriculture — especially for Indian farmers in Kerala and South India.
+
+You help farmers with:
+- Plant disease identification and remedies
+- Fungicide and pesticide recommendations
+- Crop care tips for Tomato, Banana, Chilli, Ginger and other crops
+- Soil health and fertilization advice
+- Irrigation and water management
+- Organic and chemical treatment options
+- Seasonal farming tips
+
+Keep answers:
+- Short and practical (3-5 sentences max)
+- Simple language — farmer friendly
+- Specific with product names when possible
+- Always mention safety precautions for chemicals
+
+If asked something unrelated to farming, politely redirect to farming topics.
+IMPORTANT: Always reply in {LANGUAGE}. Even if the user writes in another language, respond in {LANGUAGE} only.`;
+
+    let chatHistory = [];
+    let chatOpen = false;
+    let currentLang = 'en';
+
+    function getSystemPrompt() {
+      return SYSTEM_PROMPT.replace(/{LANGUAGE}/g, LANG_NAMES[currentLang]);
+    }
+
+    function changeChatLang() {
+      currentLang = document.getElementById('chatLang').value;
+      // Update welcome message
+      document.getElementById('chatWelcomeMsg').textContent = WELCOME_MSGS[currentLang];
+      // Update input placeholder
+      document.getElementById('chatInput').placeholder = PLACEHOLDERS[currentLang];
+      // Reset history so new language takes effect
+      chatHistory = [];
+    }
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      const win = document.getElementById('chatWindow');
+      const notif = document.getElementById('chatNotif');
+      win.classList.toggle('open', chatOpen);
+      if (chatOpen) {
+        notif.style.display = 'none';
+        document.getElementById('chatInput').focus();
+      }
+    }
+
+    function sendQuick(text) {
+      document.getElementById('chatInput').value = text;
+      sendChat();
+    }
+
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+      document.getElementById('chatSendBtn').disabled = true;
+      document.getElementById('quickQuestions').style.display = 'none';
+
+      addMessage(text, 'user');
+      const typingId = addTyping();
+
+      // All messages go as plain user text — system prompt sent separately to Worker
+      const userPart = text;
+      const contents = [...chatHistory, { role: 'user', parts: [{ text: userPart }] }];
+
+      try {
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemPrompt: getSystemPrompt(),
+            contents,
+            generationConfig: { maxOutputTokens: 300, temperature: 0.7 }
+          })
+        });
+
+        const data = await response.json();
+        removeTyping(typingId);
+
+        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+          const reply = data.candidates[0].content.parts[0].text;
+          addMessage(reply, 'bot');
+
+          // Save to history — strictly alternating user/model
+          chatHistory.push({ role: 'user', parts: [{ text: userPart }] });
+          chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+
+          // Keep last 16 messages (8 exchanges)
+          if (chatHistory.length > 16) chatHistory = chatHistory.slice(-16);
+
+        } else {
+          // Show exact error from Gemini
+          const errMsg = data?.error?.message || data?.error?.status || JSON.stringify(data);
+          console.error('Worker response:', errMsg);
+          if (errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
+            addMessage("⚠️ Daily limit reached. Please try again tomorrow or check your API quota.", 'bot');
+          } else if (errMsg.includes('API_KEY') || errMsg.includes('invalid')) {
+            addMessage("⚠️ API key issue. Please check your Gemini API key.", 'bot');
+          } else {
+            addMessage("Sorry, I couldn't get a response. Error: " + errMsg, 'bot');
+          }
+        }
+
+      } catch (err) {
+        removeTyping(typingId);
+        console.error('Worker error:', err);
+        addMessage("Connection error. Please check your internet and try again!", 'bot');
+      }
+
+      document.getElementById('chatSendBtn').disabled = false;
+      input.focus();
+    }
+
+    function addMessage(text, type) {
+      const msgs = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = `msg ${type}`;
+      div.textContent = text;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+      // Speak bot replies automatically
+      if (type === 'bot') speakReply(text);
+    }
+
+    function addTyping() {
+      const msgs = document.getElementById('chatMessages');
+      const id = 'typing-' + Date.now();
+      msgs.innerHTML += `<div class="msg typing" id="${id}"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+      return id;
+    }
+
+    function removeTyping(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    // ── SITE TRANSLATION ─────────────────────────────────────────
+    const TRANSLATIONS = {
+      en: {
+        navDetect: 'Detect', navTips: 'Tips',
+        heroBadge: '🌱 AI-Powered Farming Assistant',
+        heroTitle: 'Detect Plant Diseases <em>Instantly</em> with AI',
+        heroDesc: 'Upload a leaf photo or use your camera — our trained AI identifies the disease and gives step-by-step treatment remedies.',
+        tabUpload: '📁 Upload Image', tabWebcam: '📷 Use Camera',
+        uploadLabel: 'Step 1 — Upload Leaf Image',
+        uploadH3: 'Drop your leaf photo here',
+        uploadP: 'or <strong>click to browse</strong> · JPG, PNG, WEBP supported',
+        analyzeUploadBtn: '🔬 Analyze Disease', clearUploadBtn: '✕ Clear',
+        camLabel: 'Step 1 — Point Camera at Leaf',
+        camPlaceholder: 'Click "Start Camera" to begin',
+        camStatus: 'Camera live — point at leaf and press Capture',
+        startCamBtn: '📷 Start Camera', captureBtn: '⚡ Capture',
+        retakeBtn: '🔄 Retake', flipCamBtn: '🔃 Flip', stopCamBtn: '■ Stop',
+        capturedLabel: '📸 Frame Captured', capturedMeta: 'Ready for analysis',
+        analyzeCamBtn: '🔬 Analyze Disease',
+        resultsTitle: 'Analysis Results',
+        remediesLabel: 'Recommended Remedies',
+        lcTitle: 'Low Confidence Detection',
+        lcDesc: 'The AI is not fully confident about this result. For a more accurate diagnosis, please try again with a <strong>clearer, well-lit photo</strong> of the affected leaf.',
+        lcTips: '📸 Tips: Make sure the leaf fills the frame · Use natural daylight · Avoid blur or shadows · Focus on the affected area',
+        tipsTitle: 'Healthy Crop Tips',
+        tip1Title: 'Water Wisely', tip1Desc: 'Water at the base of plants early morning to reduce leaf moisture and prevent fungal spread.',
+        tip2Title: 'Prune Regularly', tip2Desc: 'Remove infected leaves immediately and dispose away from the garden to stop contamination.',
+        tip3Title: 'Rotate Crops', tip3Desc: 'Changing planting locations each season reduces soil-borne diseases and replenishes nutrients.',
+        tip4Title: 'Ensure Air Flow', tip4Desc: 'Proper plant spacing allows air circulation, reducing humidity that promotes disease growth.',
+        askAI: 'Ask AI',
+      },
+      ml: {
+        navDetect: 'കണ്ടെത്തൽ', navTips: 'നുറുങ്ങുകൾ',
+        heroBadge: '🌱 AI കൃഷി സഹായി',
+        heroTitle: 'സസ്യ രോഗങ്ങൾ <em>ഉടനടി</em> കണ്ടെത്തൂ',
+        heroDesc: 'ഒരു ഇല ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യൂ അല്ലെങ്കിൽ ക്യാമറ ഉപയോഗിക്കൂ — നമ്മുടെ AI രോഗം കണ്ടെത്തി ചികിത്സ നൽകും.',
+        tabUpload: '📁 ചിത്രം അപ്‌ലോഡ്', tabWebcam: '📷 ക്യാമറ ഉപയോഗിക്കൂ',
+        uploadLabel: 'ഘട്ടം 1 — ഇല ചിത്രം അപ്‌ലോഡ് ചെയ്യൂ',
+        uploadH3: 'ഇല ഫോട്ടോ ഇവിടെ ഇടൂ',
+        uploadP: 'അല്ലെങ്കിൽ <strong>ബ്രൗസ് ചെയ്യൂ</strong> · JPG, PNG, WEBP',
+        analyzeUploadBtn: '🔬 രോഗം വിശകലനം', clearUploadBtn: '✕ മായ്ക്കൂ',
+        camLabel: 'ഘട്ടം 1 — ക്യാമറ ഇലയിൽ ചൂണ്ടൂ',
+        camPlaceholder: '"ക്യാമറ ആരംഭിക്കൂ" ക്ലിക്ക് ചെയ്യൂ',
+        camStatus: 'ക്യാമറ ലൈവ് — ഇലയിൽ ചൂണ്ടി ക്യാപ്ചർ അമർത്തൂ',
+        startCamBtn: '📷 ക്യാമറ ആരംഭിക്കൂ', captureBtn: '⚡ ക്യാപ്ചർ',
+        retakeBtn: '🔄 വീണ്ടും', flipCamBtn: '🔃 മറിക്കൂ', stopCamBtn: '■ നിർത്തൂ',
+        capturedLabel: '📸 ചിത്രം ലഭിച്ചു', capturedMeta: 'വിശകലനത്തിന് തയ്യാർ',
+        analyzeCamBtn: '🔬 രോഗം വിശകലനം',
+        resultsTitle: 'വിശകലന ഫലങ്ങൾ',
+        remediesLabel: 'ശുപാർശ ചെയ്ത പ്രതിവിധികൾ',
+        lcTitle: 'കുറഞ്ഞ ആത്മവിശ്വാസം',
+        lcDesc: 'AI ഈ ഫലത്തിൽ പൂർണ്ണ ഉറപ്പില്ല. കൂടുതൽ കൃത്യത ലഭിക്കാൻ <strong>വ്യക്തമായ, നന്നായി പ്രകാശിക്കുന്ന ഫോട്ടോ</strong> ഉപയോഗിക്കൂ.',
+        lcTips: '📸 നുറുങ്ങ്: ഇല ഫ്രേം നിറയട്ടെ · പ്രകൃതി വെളിച്ചം ഉപയോഗിക്കൂ · മങ്ങൽ ഒഴിവാക്കൂ',
+        tipsTitle: 'ആരോഗ്യകരമായ വിള നുറുങ്ങുകൾ',
+        tip1Title: 'ബുദ്ധിപൂർവ്വം നനയ്ക്കൂ', tip1Desc: 'രാവിലെ ചുവട്ടിൽ നനയ്ക്കൂ — ഇലയിൽ ഈർപ്പം കുറയ്ക്കാൻ.',
+        tip2Title: 'പതിവായി വെട്ടൂ', tip2Desc: 'രോഗബാധിത ഇലകൾ ഉടനടി നീക്കം ചെയ്യൂ.',
+        tip3Title: 'വിള മാറ്റൂ', tip3Desc: 'ഓരോ സീസണിലും ഇടം മാറ്റി നടൂ — മണ്ണ് ജന്യ രോഗം കുറയ്ക്കൂ.',
+        tip4Title: 'വായു സഞ്ചാരം ഉറപ്പാക്കൂ', tip4Desc: 'ചെടികൾ തമ്മിൽ ദൂരം പാലിക്കൂ — ഈർപ്പം കുറയ്ക്കൂ.',
+        askAI: 'AI യോട് ചോദിക്കൂ',
+      },
+      hi: {
+        navDetect: 'पहचानें', navTips: 'सुझाव',
+        heroBadge: '🌱 AI कृषि सहायक',
+        heroTitle: 'पौधों की बीमारियाँ <em>तुरंत</em> पहचानें',
+        heroDesc: 'पत्ती की फोटो अपलोड करें या कैमरा उपयोग करें — हमारा AI बीमारी पहचानकर उपचार बताएगा।',
+        tabUpload: '📁 फोटो अपलोड', tabWebcam: '📷 कैमरा उपयोग',
+        uploadLabel: 'चरण 1 — पत्ती की फोटो अपलोड करें',
+        uploadH3: 'यहाँ पत्ती की फोटो छोड़ें',
+        uploadP: 'या <strong>ब्राउज़ करें</strong> · JPG, PNG, WEBP',
+        analyzeUploadBtn: '🔬 बीमारी विश्लेषण', clearUploadBtn: '✕ हटाएं',
+        camLabel: 'चरण 1 — कैमरा पत्ती पर लगाएं',
+        camPlaceholder: '"कैमरा शुरू करें" पर क्लिक करें',
+        camStatus: 'कैमरा लाइव — पत्ती पर लगाएं और कैप्चर दबाएं',
+        startCamBtn: '📷 कैमरा शुरू', captureBtn: '⚡ कैप्चर',
+        retakeBtn: '🔄 दोबारा', flipCamBtn: '🔃 पलटें', stopCamBtn: '■ बंद',
+        capturedLabel: '📸 फोटो ली गई', capturedMeta: 'विश्लेषण के लिए तैयार',
+        analyzeCamBtn: '🔬 बीमारी विश्लेषण',
+        resultsTitle: 'विश्लेषण परिणाम',
+        remediesLabel: 'अनुशंसित उपचार',
+        lcTitle: 'कम विश्वास',
+        lcDesc: 'AI इस परिणाम के बारे में पूरी तरह आश्वस्त नहीं है। कृपया <strong>स्पष्ट, अच्छी रोशनी वाली फोटो</strong> से दोबारा प्रयास करें।',
+        lcTips: '📸 सुझाव: पत्ती फ्रेम में भरे · प्राकृतिक रोशनी उपयोग करें · धुंध से बचें',
+        tipsTitle: 'स्वस्थ फसल सुझाव',
+        tip1Title: 'सही सिंचाई', tip1Desc: 'सुबह जड़ में पानी दें — पत्तियों पर नमी कम करें।',
+        tip2Title: 'नियमित छंटाई', tip2Desc: 'रोगग्रस्त पत्तियाँ तुरंत हटाएं।',
+        tip3Title: 'फसल बदलें', tip3Desc: 'हर सीजन में जगह बदलकर बोएं।',
+        tip4Title: 'वायु संचार', tip4Desc: 'पौधों के बीच उचित दूरी रखें।',
+        askAI: 'AI से पूछें',
+      },
+      ta: {
+        navDetect: 'கண்டறி', navTips: 'குறிப்புகள்',
+        heroBadge: '🌱 AI வேளாண் உதவியாளர்',
+        heroTitle: 'தாவர நோய்களை <em>உடனடியாக</em> கண்டறியுங்கள்',
+        heroDesc: 'இலை புகைப்படம் பதிவேற்றுங்கள் அல்லது கேமரா பயன்படுத்துங்கள் — நம் AI நோயை கண்டறிந்து தீர்வு தரும்.',
+        tabUpload: '📁 படம் பதிவேற்று', tabWebcam: '📷 கேமரா பயன்படுத்து',
+        uploadLabel: 'படி 1 — இலை படம் பதிவேற்றுங்கள்',
+        uploadH3: 'இலை புகைப்படத்தை இங்கே இடுங்கள்',
+        uploadP: 'அல்லது <strong>உலாவுங்கள்</strong> · JPG, PNG, WEBP',
+        analyzeUploadBtn: '🔬 நோய் பகுப்பாய்வு', clearUploadBtn: '✕ அழி',
+        camLabel: 'படி 1 — கேமராவை இலையில் நோக்குங்கள்',
+        camPlaceholder: '"கேமரா தொடங்கு" கிளிக் செய்யுங்கள்',
+        camStatus: 'கேமரா நேரலை — இலையில் நோக்கி படம் எடுங்கள்',
+        startCamBtn: '📷 கேமரா தொடங்கு', captureBtn: '⚡ படம் எடு',
+        retakeBtn: '🔄 மீண்டும்', flipCamBtn: '🔃 திருப்பு', stopCamBtn: '■ நிறுத்து',
+        capturedLabel: '📸 படம் எடுக்கப்பட்டது', capturedMeta: 'பகுப்பாய்வுக்கு தயார்',
+        analyzeCamBtn: '🔬 நோய் பகுப்பாய்வு',
+        resultsTitle: 'பகுப்பாய்வு முடிவுகள்',
+        remediesLabel: 'பரிந்துரைக்கப்பட்ட தீர்வுகள்',
+        lcTitle: 'குறைந்த நம்பகத்தன்மை',
+        lcDesc: 'AI இந்த முடிவில் முழுமையாக நம்பகமாக இல்லை. <strong>தெளிவான, நல்ல வெளிச்சத்தில்</strong> மீண்டும் முயற்சிக்கவும்.',
+        lcTips: '📸 குறிப்பு: இலை சட்டகத்தை நிரப்பட்டும் · இயற்கை வெளிச்சம் பயன்படுத்துங்கள்',
+        tipsTitle: 'ஆரோக்கியமான பயிர் குறிப்புகள்',
+        tip1Title: 'சரியாக நீர் பாய்ச்சுங்கள்', tip1Desc: 'காலையில் வேரில் நீர் பாய்ச்சுங்கள்.',
+        tip2Title: 'தொடர்ந்து கத்தரியுங்கள்', tip2Desc: 'நோயுற்ற இலைகளை உடனடியாக அகற்றுங்கள்.',
+        tip3Title: 'பயிர் மாற்றுங்கள்', tip3Desc: 'ஒவ்வொரு பருவமும் இடத்தை மாற்றுங்கள்.',
+        tip4Title: 'காற்று ஓட்டம்', tip4Desc: 'சரியான இடைவெளியில் நடுங்கள்.',
+        askAI: 'AI கேளுங்கள்',
+      },
+      te: {
+        navDetect: 'గుర్తించు', navTips: 'చిట్కాలు',
+        heroBadge: '🌱 AI వ్యవసాయ సహాయకుడు',
+        heroTitle: 'మొక్కల వ్యాధులను <em>వెంటనే</em> గుర్తించండి',
+        heroDesc: 'ఆకు ఫోటో అప్‌లోడ్ చేయండి లేదా కెమెరా వాడండి — మన AI వ్యాధిని గుర్తించి పరిష్కారం ఇస్తుంది.',
+        tabUpload: '📁 చిత్రం అప్‌లోడ్', tabWebcam: '📷 కెమెరా వాడు',
+        uploadLabel: 'దశ 1 — ఆకు చిత్రం అప్‌లోడ్ చేయండి',
+        uploadH3: 'ఆకు ఫోటోను ఇక్కడ వేయండి',
+        uploadP: 'లేదా <strong>బ్రౌజ్ చేయండి</strong> · JPG, PNG, WEBP',
+        analyzeUploadBtn: '🔬 వ్యాధి విశ్లేషణ', clearUploadBtn: '✕ తొలగించు',
+        camLabel: 'దశ 1 — కెమెరాను ఆకుపై చూపించండి',
+        camPlaceholder: '"కెమెరా ప్రారంభించు" క్లిక్ చేయండి',
+        camStatus: 'కెమెరా లైవ్ — ఆకుపై చూపించి క్యాప్చర్ నొక్కండి',
+        startCamBtn: '📷 కెమెరా ప్రారంభించు', captureBtn: '⚡ క్యాప్చర్',
+        retakeBtn: '🔄 మళ్ళీ', flipCamBtn: '🔃 తిప్పు', stopCamBtn: '■ ఆపు',
+        capturedLabel: '📸 ఫ్రేమ్ తీయబడింది', capturedMeta: 'విశ్లేషణకు సిద్ధం',
+        analyzeCamBtn: '🔬 వ్యాధి విశ్లేషణ',
+        resultsTitle: 'విశ్లేషణ ఫలితాలు',
+        remediesLabel: 'సిఫారసు చేసిన పరిష్కారాలు',
+        lcTitle: 'తక్కువ విశ్వాసం',
+        lcDesc: 'AI ఈ ఫలితంపై పూర్తిగా నిశ్చితంగా లేదు. <strong>స్పష్టమైన, మంచి వెలుతురులో ఫోటో</strong>తో మళ్ళీ ప్రయత్నించండి.',
+        lcTips: '📸 చిట్కా: ఆకు ఫ్రేమ్ నింపనివ్వండి · సహజ వెలుతురు వాడండి',
+        tipsTitle: 'ఆరోగ్యకరమైన పంట చిట్కాలు',
+        tip1Title: 'తెలివిగా నీరు పోయండి', tip1Desc: 'ఉదయం మొదట్లో నీరు పోయండి.',
+        tip2Title: 'క్రమం తప్పకుండా కత్తిరించండి', tip2Desc: 'రోగగ్రస్త ఆకులను వెంటనే తొలగించండి.',
+        tip3Title: 'పంటలు మార్చండి', tip3Desc: 'ప్రతి సీజన్‌లో స్థానాన్ని మార్చండి.',
+        tip4Title: 'గాలి ప్రసరణ', tip4Desc: 'మొక్కల మధ్య సరైన దూరం పాటించండి.',
+        askAI: 'AI అడగండి',
+      }
+    };
+
+    function changeSiteLang() {
+      const lang = document.getElementById('siteLang').value;
+      const t = TRANSLATIONS[lang];
+      if (!t) return;
+
+      // Also sync chatbot language
+      document.getElementById('chatLang').value = lang;
+      currentLang = lang;
+      document.getElementById('chatWelcomeMsg').textContent = WELCOME_MSGS[lang];
+      document.getElementById('chatInput').placeholder = PLACEHOLDERS[lang];
+      chatHistory = [];
+
+      // Nav
+      document.getElementById('navDetect').textContent = t.navDetect;
+      document.getElementById('navTips').textContent = t.navTips;
+
+      // Hero
+      document.getElementById('heroBadge').textContent = t.heroBadge;
+      document.getElementById('heroTitle').innerHTML = t.heroTitle;
+      document.getElementById('heroDesc').textContent = t.heroDesc;
+
+      // Tabs
+      document.getElementById('tabUpload').innerHTML = t.tabUpload;
+      document.getElementById('tabWebcam').innerHTML = t.tabWebcam;
+
+      // Upload panel
+      document.querySelector('#panelUpload .section-label').textContent = t.uploadLabel;
+      document.querySelector('#uploadZone h3').textContent = t.uploadH3;
+      document.querySelector('#uploadZone p').innerHTML = t.uploadP;
+      document.getElementById('analyzeUploadBtn').textContent = t.analyzeUploadBtn;
+      document.getElementById('clearUploadBtn').textContent = t.clearUploadBtn;
+
+      // Camera panel
+      document.querySelector('#panelWebcam .section-label').textContent = t.camLabel;
+      document.querySelector('#webcamPlaceholder span:last-child').textContent = t.camPlaceholder;
+      document.getElementById('camStatus').innerHTML = `<div class="cam-live-dot"></div> ${t.camStatus}`;
+      document.getElementById('startCamBtn').textContent = t.startCamBtn;
+      document.getElementById('captureBtn').textContent = t.captureBtn;
+      document.getElementById('retakeBtn').textContent = t.retakeBtn;
+      document.getElementById('flipCamBtn').textContent = t.flipCamBtn;
+      document.getElementById('stopCamBtn').textContent = t.stopCamBtn;
+      document.querySelector('.captured-label').textContent = t.capturedLabel;
+      document.getElementById('analyzeCamBtn').textContent = t.analyzeCamBtn;
+
+      // Results
+      document.querySelector('.results-title').innerHTML = `${t.resultsTitle} <span class="source-tag" id="sourceTag">${document.getElementById('sourceTag')?.textContent || ''}</span>`;
+      document.querySelector('.prob-label:last-of-type') && (document.querySelector('.prob-label:last-of-type').textContent = t.remediesLabel);
+      document.querySelectorAll('.prob-label').forEach(el => { if (el.textContent.includes('Remedies') || el.textContent.includes(t.remediesLabel)) el.textContent = t.remediesLabel; });
+
+      // Low confidence box
+      document.querySelector('.lc-title').textContent = t.lcTitle;
+      document.querySelector('.lc-desc').innerHTML = t.lcDesc;
+      document.querySelector('.lc-tips').textContent = t.lcTips;
+
+      // Tips section
+      document.querySelector('.tips-strip h2').textContent = t.tipsTitle;
+      const tipCards = document.querySelectorAll('.tip-card');
+      if (tipCards.length >= 4) {
+        tipCards[0].querySelector('h4').textContent = t.tip1Title;
+        tipCards[0].querySelector('p').textContent = t.tip1Desc;
+        tipCards[1].querySelector('h4').textContent = t.tip2Title;
+        tipCards[1].querySelector('p').textContent = t.tip2Desc;
+        tipCards[2].querySelector('h4').textContent = t.tip3Title;
+        tipCards[2].querySelector('p').textContent = t.tip3Desc;
+        tipCards[3].querySelector('h4').textContent = t.tip4Title;
+        tipCards[3].querySelector('p').textContent = t.tip4Desc;
+      }
+
+      // Chat bubble label
+      document.querySelector('.chat-bubble-label').textContent = t.askAI;
+    }
+
+    // ── VOICE INPUT & OUTPUT ─────────────────────────────────────
+    const SPEECH_LANG_MAP = {
+      en: 'en-IN', ml: 'ml-IN', hi: 'hi-IN', ta: 'ta-IN', te: 'te-IN'
+    };
+
+    let recognition = null;
+    let isListening = false;
+    let isSpeaking = false;
+    let speakerOn = true; // Speaker is ON by default
+
+    function toggleSpeaker() {
+      speakerOn = !speakerOn;
+      const btn = document.getElementById('speakerBtn');
+      if (speakerOn) {
+        btn.textContent = '🔊';
+        btn.classList.remove('muted');
+        btn.title = 'Speaker ON — click to mute';
+      } else {
+        btn.textContent = '🔇';
+        btn.classList.add('muted');
+        btn.title = 'Speaker OFF — click to unmute';
+        window.speechSynthesis.cancel(); // Stop any ongoing speech
+      }
+    }
+
+    // Voice Input — Speech to Text
+    function toggleVoiceInput() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        addMessage("Sorry, your browser doesn't support voice input. Please use Chrome!", 'bot');
+        return;
+      }
+
+      if (isListening) {
+        recognition.stop();
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.lang = SPEECH_LANG_MAP[currentLang] || 'en-IN';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        document.getElementById('chatMicBtn').classList.add('listening');
+        document.getElementById('chatMicBtn').textContent = '🔴';
+        document.getElementById('chatInput').placeholder = 'Listening...';
+      };
+
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        document.getElementById('chatInput').value = transcript;
+        sendChat();
+      };
+
+      recognition.onerror = (e) => {
+        console.error('Speech error:', e.error);
+        stopListening();
+        if (e.error === 'not-allowed') {
+          addMessage("Microphone permission denied. Please allow microphone access!", 'bot');
+        }
+      };
+
+      recognition.onend = () => stopListening();
+
+      recognition.start();
+    }
+
+    function stopListening() {
+      isListening = false;
+      const btn = document.getElementById('chatMicBtn');
+      btn.classList.remove('listening');
+      btn.textContent = '🎤';
+      document.getElementById('chatInput').placeholder = PLACEHOLDERS[currentLang] || 'Ask a farming question...';
+    }
+
+    // Voice Output — Text to Speech
+    function speakReply(text) {
+      if (!('speechSynthesis' in window) || !speakerOn) return;
+
+      // Stop any ongoing speech
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = SPEECH_LANG_MAP[currentLang] || 'en-IN';
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      utterance.onstart = () => { isSpeaking = true; };
+      utterance.onend = () => { isSpeaking = false; };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Send on Enter key
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendChat();
+    });
+  </script>
+  <!-- AGROVA HEALTH CARD MODAL -->
+  <div class="modal-overlay" id="healthCardModal">
+    <div class="health-card-modal">
+      <div class="modal-header">
+        <div class="modal-title">📄 Agrova Diagnostic Health Card</div>
+        <button class="modal-close" onclick="closeHealthCard()">✕</button>
+      </div>
+
+      <div class="health-pass-body" id="healthPassPrintable">
+        <div class="pass-header">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:var(--green-deep);">
+              Agrova Farmer Pass</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">AI Certified Diagnostic Certificate</div>
+          </div>
+          <div class="pass-badge">VERIFIED AI DIAGNOSIS</div>
+        </div>
+
+        <div class="pass-row"><span class="pass-label">Issue ID:</span><span class="pass-val"
+            id="passId">AGV-90821</span></div>
+        <div class="pass-row"><span class="pass-label">Date & Time:</span><span class="pass-val"
+            id="passDate">2026-09-13</span></div>
+        <div class="pass-row"><span class="pass-label">Detected Disease:</span><span class="pass-val"
+            id="passDisease">Early Blight</span></div>
+        <div class="pass-row"><span class="pass-label">AI Confidence:</span><span class="pass-val"
+            id="passConf">94.8%</span></div>
+        <div class="pass-row"><span class="pass-label">Severity Level:</span><span class="pass-val"
+            id="passSeverity">High</span></div>
+        <div class="pass-row"><span class="pass-label">Recommended Remedy:</span><span class="pass-val"
+            id="passRemedy">Copper Oxychloride 50% WP @ 2g/L</span></div>
+        <div class="pass-row"><span class="pass-label">Spray Water Volume:</span><span class="pass-val"
+            id="passWater">100 Liters (per 50 Cents)</span></div>
+
+        <div class="pass-qr-wrap">
+          <div class="pass-qr-box">🌿<br>AGROVA<br>VERIFIED</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;">Scan to re-verify diagnosis at local
+            Krishi Bhavan</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeHealthCard()">Close</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
