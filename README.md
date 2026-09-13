@@ -1,6 +1,26 @@
 # Agrova
 
-Agrova is a browser-based AI farming assistant for plant disease detection and crop care. Farmers can upload a leaf image or use a camera, receive a Teachable Machine prediction, review treatment guidance, calculate spray dosage, inspect weather risk, and ask the farming assistant questions.
+Agrova is a hackathon-ready browser-based AI farming assistant for plant disease detection and crop care. Farmers can upload a leaf image or use a camera, receive a Teachable Machine prediction, review treatment guidance, calculate spray dosage, inspect weather risk, and ask the farming assistant questions.
+
+## Summary
+
+Agrova turns a single leaf photo into a practical crop-care workflow. The prototype combines AI-assisted diagnosis, local-language access, treatment guidance, weather context, dosage calculation, and treatment-history export in one responsive interface designed for farmers.
+
+### Demo Flow
+
+1. Select the crop and upload a clear leaf image, or capture one with the camera.
+2. Review the predicted disease, confidence level, severity, and recommended remedies.
+3. Use the weather advisory and dosage calculator to plan the next action.
+4. Save the treatment record and export the history as CSV or printable PDF.
+5. Ask the multilingual farming assistant for additional crop-care guidance.
+
+### Highlights
+
+- Solves a clear field problem: early disease awareness and actionable next steps.
+- Works as a lightweight single-page application with no build setup.
+- Supports English, Malayalam, Hindi, Tamil, and Telugu experiences.
+- Combines AI, camera, voice, geolocation, weather, and export workflows.
+- Includes permission consent, low-confidence messaging, safety guidance, and responsive mobile UI.
 
 ## Current Features
 
@@ -10,12 +30,17 @@ Agrova is a browser-based AI farming assistant for plant disease detection and c
 - Confidence score and low-confidence warning.
 - Disease-specific remedies and prevention guidance.
 - Scan history stored in browser local storage.
+- Crop-aware treatment history with date, disease, confidence, and remedy details.
+- CSV export and print-to-PDF export for saved treatment history.
 - Printable Agrova diagnostic health card.
+- First-time user walkthrough for the detection workflow.
+- Consent dialogs before camera, microphone, and location access.
 - WhatsApp sharing and browser voice readout.
 - Spray dosage calculator for cents, acres, and hectares.
 - Weather and fungal-risk advisory by Kerala district.
 - Crop calendar for tomato, banana, chilli, and ginger.
 - Disease reference gallery.
+- Photo-backed visual reference gallery with lazy loading and fallbacks.
 - Nearby agricultural shop search using geolocation and Google Maps.
 - Farming chatbot with text input, voice input, multiple languages, and voice output.
 - English, Malayalam, Hindi, Tamil, and Telugu interface options.
@@ -81,54 +106,11 @@ If any external service is unavailable, the related feature may fail while the r
 - Remedy and dosage information must be checked against the pesticide label and local agricultural regulations.
 - Weather district values are demo or advisory data unless refreshed through the live weather flow.
 - Scan history is local to the current browser and device.
+- Gallery photos are visual references and must not be used as a substitute for diagnosis.
 - The chatbot requires the configured worker endpoint and internet access.
 - A Google Maps API key and service endpoints are visible in client-side code. This is not suitable for production deployment without server-side protection and key restrictions.
 - The current disease model supports only the classes included in its Teachable Machine metadata.
 
-## Recommended Next Features
-
-### Priority 1: Production Safety
-
-1. Move Google Maps and chatbot credentials behind a backend or serverless proxy.
-2. Restrict API keys by domain, API, quota, and referrer.
-3. Add request timeouts, retry handling, and offline error states.
-4. Add server-side logging without storing private images or location data unnecessarily.
-5. Add a clear consent notice before using camera, location, or voice features.
-
-### Priority 2: Better Diagnosis
-
-1. Add image quality checks for blur, darkness, and leaf visibility before prediction.
-2. Show the top three predictions instead of only the highest prediction.
-3. Add crop selection before analysis to improve model accuracy.
-4. Add a feedback workflow for incorrect predictions.
-5. Expand and version the disease model with verified regional images.
-6. Add a recommendation to consult an expert when confidence is low or symptoms are severe.
-
-### Priority 3: Farmer Workflow
-
-1. Add editable crop, farm, and location profiles.
-2. Add scheduled reminders for scouting, watering, and treatment follow-up.
-3. Add a treatment log with product, date, dosage, and application status.
-4. Allow history export as CSV or PDF.
-5. Add cloud sync with optional account login.
-6. Add offline support as a Progressive Web App.
-
-### Priority 4: User Experience
-
-1. Add real plant images to the disease gallery.
-2. Replace emoji-only controls with a consistent icon set and tooltips.
-3. Add a clearer first-use empty state and a sample image option.
-4. Improve translations across all sections, not only the primary detection flow.
-5. Add keyboard-friendly star ratings and more complete screen-reader labels.
-6. Add loading, offline, permission-denied, and service-unavailable states consistently.
-
-### Priority 5: Local Agriculture Intelligence
-
-1. Add district-specific crop calendars and regional disease alerts.
-2. Add local-language treatment instructions reviewed by agricultural experts.
-3. Add nearby Krishi Bhavan, KVK, and certified input dealer data.
-4. Add crop-stage-aware dosage guidance.
-5. Add rainfall forecasts and treatment-window recommendations.
 
 ## Safety Notice
 
