@@ -3241,6 +3241,7 @@
       reader.onload = () => {
         uploadedDataURL = reader.result;
         previewImg.src = uploadedDataURL;
+        setChatImage(uploadedDataURL, file.name);
         analyzeButton.disabled = false;
       };
       reader.onerror = () => {
@@ -3341,6 +3342,7 @@
       capturedCanvas.width = w; capturedCanvas.height = h;
       capturedCanvas.getContext('2d').drawImage(webcamVideo, 0, 0, w, h);
       capturedDataURL = capturedCanvas.toDataURL('image/jpeg', 0.92);
+      setChatImage(capturedDataURL, 'Camera capture');
 
       capturedCanvas.style.display = 'block';
       webcamVideo.style.display = 'none';
@@ -4256,6 +4258,63 @@
       background: #fff;
     }
 
+    .chat-attach {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      color: var(--green-deep);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chat-attach:hover {
+      background: var(--green-fresh);
+      color: #fff;
+    }
+
+    .chat-attachment {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-top: 1px solid #eef2ee;
+      background: #f8faf8;
+      color: var(--green-deep);
+      font-size: 0.76rem;
+    }
+
+    .chat-attachment.visible {
+      display: flex;
+    }
+
+    .chat-attachment img {
+      width: 34px;
+      height: 34px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .chat-attachment-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chat-attachment-clear {
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
     .chat-input {
       flex: 1;
       border: 1.5px solid #dde7de;
@@ -4850,8 +4909,16 @@
       <button class="quick-btn" onclick="sendQuick('How to improve soil health?')">🌱 Soil Tips</button>
     </div>
 
+    <div class="chat-attachment" id="chatAttachment">
+      <img id="chatAttachmentPreview" src="" alt="Attached plant image" />
+      <span class="chat-attachment-name" id="chatAttachmentName">Image attached</span>
+      <button class="chat-attachment-clear" onclick="clearChatImage()" title="Remove image">✕</button>
+    </div>
+
     <div class="chat-input-area">
       <button class="chat-mic" id="chatMicBtn" onclick="toggleVoiceInput()" title="Speak your question">🎤</button>
+      <button class="chat-attach" onclick="document.getElementById('chatImageInput').click()" title="Attach a plant image">📎</button>
+      <input type="file" id="chatImageInput" accept="image/*" hidden />
       <input class="chat-input" id="chatInput" type="text" placeholder="Ask a farming question..." />
       <button class="chat-send" id="chatSendBtn" onclick="sendChat()">➤</button>
     </div>
@@ -4904,6 +4971,7 @@ IMPORTANT: Always reply in {LANGUAGE}. Even if the user writes in another langua
     let chatHistory = [];
     let chatOpen = false;
     let currentLang = 'en';
+    let chatImageContext = null;
 
     function getSystemPrompt() {
       return SYSTEM_PROMPT.replace(/{LANGUAGE}/g, LANG_NAMES[currentLang]);
@@ -4935,10 +5003,39 @@ IMPORTANT: Always reply in {LANGUAGE}. Even if the user writes in another langua
       sendChat();
     }
 
+    function setChatImage(dataUrl, name = 'Plant image') {
+      if (!dataUrl || !dataUrl.startsWith('data:image/')) return;
+      const commaIndex = dataUrl.indexOf(',');
+      const header = dataUrl.slice(0, commaIndex);
+      chatImageContext = {
+        data: dataUrl.slice(commaIndex + 1),
+        mimeType: header.slice(5, header.indexOf(';')),
+        name,
+      };
+      document.getElementById('chatAttachmentPreview').src = dataUrl;
+      document.getElementById('chatAttachmentName').textContent = name;
+      document.getElementById('chatAttachment').classList.add('visible');
+    }
+
+    function clearChatImage() {
+      chatImageContext = null;
+      document.getElementById('chatAttachmentPreview').src = '';
+      document.getElementById('chatAttachment').classList.remove('visible');
+      document.getElementById('chatImageInput').value = '';
+    }
+
+    document.getElementById('chatImageInput').addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = () => setChatImage(reader.result, file.name);
+      reader.readAsDataURL(file);
+    });
+
     async function sendChat() {
       const input = document.getElementById('chatInput');
       const text = input.value.trim();
-      if (!text) return;
+      if (!text && !chatImageContext) return;
 
       input.value = '';
       document.getElementById('chatSendBtn').disabled = true;
@@ -4947,9 +5044,13 @@ IMPORTANT: Always reply in {LANGUAGE}. Even if the user writes in another langua
       addMessage(text, 'user');
       const typingId = addTyping();
 
-      // All messages go as plain user text — system prompt sent separately to Worker
       const userPart = text;
-      const contents = [...chatHistory, { role: 'user', parts: [{ text: userPart }] }];
+      const parts = [];
+      if (chatImageContext) {
+        parts.push({ inline_data: { mime_type: chatImageContext.mimeType, data: chatImageContext.data } });
+      }
+      parts.push({ text: userPart || 'Please analyze this plant image and describe what you see.' });
+      const contents = [...chatHistory, { role: 'user', parts }];
 
       try {
         const response = await fetch(WORKER_URL, {
@@ -4970,7 +5071,7 @@ IMPORTANT: Always reply in {LANGUAGE}. Even if the user writes in another langua
           addMessage(reply, 'bot');
 
           // Save to history — strictly alternating user/model
-          chatHistory.push({ role: 'user', parts: [{ text: userPart }] });
+          chatHistory.push({ role: 'user', parts: [{ text: userPart || 'Please analyze the attached plant image.' }] });
           chatHistory.push({ role: 'model', parts: [{ text: reply }] });
 
           // Keep last 16 messages (8 exchanges)
